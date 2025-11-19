@@ -62,13 +62,17 @@ module Rails
         gem 'rails'
       end
     rescue Gem::LoadError => load_error
-      $stderr.puts %(Missing the Rails #{version} gem. Please `gem install -v=#{version} rails`, update your RAILS_GEM_VERSION setting in config/environment.rb for the Rails version you do have installed, or comment out RAILS_GEM_VERSION to use the latest version installed.)
-      exit 1
+      if load_error.message =~ /Could not find RubyGem rails/
+        STDERR.puts %(Missing the Rails #{version} gem. Please `gem install -v=#{version} rails`, update your RAILS_GEM_VERSION setting in config/environment.rb for the Rails version you do have installed, or comment out RAILS_GEM_VERSION to use the latest version installed.)
+        exit 1
+      else
+        raise
+      end
     end
 
     class << self
       def rubygems_version
-        Gem::RubyGemsVersion rescue nil
+        Gem::VERSION
       end
 
       def gem_version
@@ -108,3 +112,6 @@ end
 
 # All that for this:
 Rails.boot!
+
+require 'rbconfig'
+Config = RbConfig

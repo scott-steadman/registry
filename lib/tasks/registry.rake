@@ -5,12 +5,6 @@ namespace :registry do
     sh "annotate -p before -i -e tests"
   end
 
-  desc 'Generate coverage report'
-  task :coverage do
-    ENV['COVERAGE'] = '1'
-    system('rake test')
-  end
-
   desc "Set a registry value (eg 'api.enabled'=true)"
   task :set => [:environment] do
     ARGV.shift

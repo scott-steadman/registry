@@ -9,8 +9,10 @@ module Registry
     #   end
     def permission_check(*args, &blk)
       if block_given?
-        Registry::RegistryController.send(:define_method, :permission_check, &blk)
-        Registry::RegistryController.before_filter(:permission_check)
+        silence_warnings do
+          Registry::RegistryController.send(:define_method, :permission_check, &blk)
+          Registry::RegistryController.before_filter(:permission_check)
+        end
       else
         Registry::RegistryController.filter_chain.delete_if { |ii| :permission_check == ii.method }
       end
@@ -34,8 +36,10 @@ module Registry
     #   end
     def user_id(*args, &blk)
       if block_given?
-        Registry::RegistryController.send(:define_method, :registry_user_id, &blk)
-        Registry::RegistryController.send(:private, :registry_user_id)
+        silence_warnings do
+          Registry::RegistryController.send(:define_method, :registry_user_id, &blk)
+          Registry::RegistryController.send(:private, :registry_user_id)
+        end
       else
         Registry::RegistryController.send(:remove_method, :registry_user_id)
       end
@@ -49,8 +53,10 @@ module Registry
     #   end
     def user_name(&blk)
       if block_given?
-        Registry::RegistryController.send(:define_method, :registry_user_name, &blk)
-        Registry::RegistryController.send(:private, :registry_user_name)
+        silence_warnings do
+          Registry::RegistryController.send(:define_method, :registry_user_name, &blk)
+          Registry::RegistryController.send(:private, :registry_user_name)
+        end
       else
         Registry::RegistryController.send(:remove_method, :registry_user_name)
       end
@@ -92,7 +98,9 @@ module Registry
     #     end
     #   end
     def should_reset_proc(&blk)
-      Registry.singleton_class.send(:define_method, :should_reset?, &blk)
+      silence_warnings do
+        Registry.singleton_class.send(:define_method, :should_reset?, &blk)
+      end
     end
 
     # Add a transcoder.
@@ -112,7 +120,7 @@ module Registry
     #     config.add_transcoder do
     #       check   { |value| value =~ /\.\./ }
     #
-    #       from_db do |string| 
+    #       from_db do |string|
     #         begin
     #           eval(value)
     #         rescue SyntaxError => ex
@@ -133,7 +141,7 @@ module Registry
     #   end
     def add_transcoder(&block)
       instance = Transcoder::DSL.new
-      instance.instance_eval &block
+      instance.instance_exec(&block)
       Transcoder.transcoders << instance
     end
 

@@ -117,7 +117,7 @@ module Registry
 
   # :nodoc:
   def self.prevent_reset?
-    @prevent_reset
+    defined?(@prevent_reset) && @prevent_reset
   end
 
   # Return changes made at the end of a path
@@ -222,7 +222,7 @@ private
       self.class_eval %{
 
         def #{method}                                               # def foo
-          key = hash_key('#{method}')                               #   key = hash_key('foo')      
+          key = hash_key('#{method}')                               #   key = hash_key('foo')
           ret = @hash[key]                                          #   ret = @hash[key]
           if ret.is_a?(Hash)                                        #   if ret.is_a?(Hash)
             path = @parent_path + '/#{method}'                      #     path = @parent_path + '/foo'
@@ -235,7 +235,7 @@ private
         end                                                         # end
 
         def #{method}=(value, save=true)                            # def foo=(value, save=true)
-          key = hash_key('#{method}')                               #   key = hash_key('foo')      
+          key = hash_key('#{method}')                               #   key = hash_key('foo')
           @hash[key] = value                                        #   @hash[key] = value
           update(key, value) if save                                #   update(key, value) if save
         end                                                         # end

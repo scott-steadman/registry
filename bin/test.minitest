@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'minitest/autorun'
+require 'method_source'
+
+base_dir = File.expand_path(File.join(File.dirname(__FILE__), ".."))
+log_file = "#{base_dir}/log/test.log"
+File.delete(log_file) if File.exist?(log_file)
+
+$SKIP_COVERAGE = true
+$LOAD_PATH.push base_dir
+
+arg_path, arg_line = ARGV[0].split(':')
+
+$arg_line = arg_line.to_i
+
+require arg_path
+
+# See https://github.com/minitest/minitest/lib/minitest.rb
+ARGV << '--verbose'
+
+class MiniTest::Test
+  def self.methods_matching(re)
+    super.select do |method_name|
+      # Cribbed from https://github.com/rails/rails/blob/2f9c84a604b3288504196e23c95348221a298b35/railties/lib/rails/test_unit/runner.rb#L171
+      method = public_instance_method(method_name)
+      file, start_line = method.source_location
+
+      next true if $arg_line.zero?
+
+      begin
+        end_line = method.source.count("\n") + start_line + 1
+      rescue EOFError
+        puts "WARNING: #{method.name} doesn't parse correctly"
+        next false
+      end
+
+      (start_line .. end_line).include?($arg_line)
+    end
+  end
+end # class MiniTest::Test
+
+
+# vim: set sw=2 ts=2 et ai nowrap bg=dark ft=ruby

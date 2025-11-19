@@ -2,23 +2,23 @@
 #
 # Table name: registry_entries
 #
-#  id          :integer         not null, primary key
-#  env         :string(255)
+#  id          :integer          not null, primary key
+#  env         :string(32)
 #  parent_id   :integer
 #  key         :string(255)
-#  type        :string(255)
+#  type        :string(64)
 #  value       :string(255)
 #  label       :string(255)
 #  description :string(255)
 #  user_id     :integer
 #  created_at  :datetime
 #  updated_at  :datetime
-#  version     :integer
 #  notes       :text
+#  version     :integer
 #
 # Indexes
 #
-#  index_registry_entries_on_parent_id_and_key      (parent_id, key)
+#  index_registry_entries_on_parent_id_and_key  (parent_id,key)
 #
 
 require 'registry'

@@ -48,7 +48,7 @@ ARGV.each_with_index do |arg, ii|
   elsif arg =~ /^test[\/\\]/
     @test_script = arg
 
-    unless File.exists?(@test_script)
+    unless File.exist?(@test_script)
       puts "Cannot find test filename #{@test_script}"
       exit
     end
@@ -61,7 +61,7 @@ ARGV.each_with_index do |arg, ii|
     @good_rev = arg
   end
 end
-  
+
 if @good_rev.nil? or @test_script.nil?
   RDoc::usage
   exit

@@ -1,0 +1,6 @@
+{
+  "editor.formatOnSave": false,
+  "rdbg.rubyVersionManager": "rbenv",
+  "solargraph.bundlerPath": "bundle",
+  "solargraph.useBundler": true,
+}

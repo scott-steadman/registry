@@ -3,6 +3,7 @@ require 'test_helper'
 class RegistryTest < ActiveSupport::TestCase
 
   def setup
+    Registry::Entry.delete_all # for some reason transactions are not working here
     Registry.reset(true)
   end
 
@@ -192,7 +193,7 @@ class RegistryTest < ActiveSupport::TestCase
   end
 
   test 'reset_interval reset_proc and should_reset' do
-    Registry.configure do |cfg| 
+    Registry.configure do |cfg|
       cfg.reset_interval = 1.second
     end
 

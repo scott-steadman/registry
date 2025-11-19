@@ -3,26 +3,22 @@
   This engine provides a registry mechanism which can be used to enable/disable
   functionality or change parameters at runtime.
 
-
 === Installation
 
   # Gemfile
-  gem 'registry', :git => 'https://github.com/ss/registry.git'
+  gem 'registry', :git => 'https://github.com/scott-steadman/registry.git'
 
 == Testing/Coverage
 
   # setup test environment
-  rbenv install 1.9.3-p551
-  gem install bundler -v '~>1.0.0'
+  rbenv install `cat .ruby-version`  # if you don't have the ruby version installed
   bundle install --clean --path=vendor/bundle
   bundle exec rake db:migrate
 
   # run tests
-  bundle exec rake test
+  rm -f db/test.sqlite3 && bundle exec rake db:test:prepare test
 
-  # generate coverage report
-  bundle exec rake registry:coverage
-  # point your browser at http://localhost:3000/coverage/
+  # view coverage report at: http://localhost:3000/coverage/
 
 === Usage
 

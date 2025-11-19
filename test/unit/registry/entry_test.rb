@@ -6,6 +6,7 @@ module Registry
     CONFIG = "#{Rails.root}/tmp/registry.yml"
 
     def setup
+      Registry::Entry.delete_all
       Dir.mkdir("#{Rails.root}/tmp") rescue nil
       File.delete(CONFIG)            rescue nil
     end
@@ -18,14 +19,14 @@ module Registry
     test 'export!' do
       expected = create_entries
       assert_hash expected, Entry.export!(CONFIG)
-      assert_equal true, File.exists?(CONFIG), 'Export file should be created'
+      assert_equal true, File.exist?(CONFIG), 'Export file should be created'
     end
 
     test 'export! no file' do
       File.delete(Entry::DEFAULT_YML_LOCATION) rescue nil
       expected = create_entries
       assert_hash expected, Entry.export!(nil)
-      assert_equal false, File.exists?(Entry::DEFAULT_YML_LOCATION), 'Export file should NOT be created'
+      assert_equal false, File.exist?(Entry::DEFAULT_YML_LOCATION), 'Export file should NOT be created'
     end
 
     test 'export' do
@@ -135,7 +136,7 @@ module Registry
       assert_equal true, Entry.root.child('/folder1').folder?, 'child method should handle leading /'
       assert_equal ':symbol', Entry.root.child('folder2/:symbol').value
       assert_raise ArgumentError do
-        Entry.root.child('foo/bar') 
+        Entry.root.child('foo/bar')
       end
     end
 
@@ -166,7 +167,7 @@ module Registry
           folder = Folder.create!(:parent => root, :key => folder)
 
           values.each do |key, value|
-            entry = Entry.create!(:parent => folder, :key => key, :value => value)
+            Entry.create!(:parent => folder, :key => key, :value => value)
             entries[env][folder.key].store(key, value)
           end
         end
