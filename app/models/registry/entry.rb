@@ -285,12 +285,17 @@ module Registry
         key = Transcoder.to_db(key)
         reg = Entry.first(:conditions => ['parent_id = ? AND key = ?', self, key])
         if value.is_a?(Hash)
-          reg = create_folder(:key => key) if reg.nil? && should_create?(key, opts)
+          if reg.nil? && should_create?(key, opts)
+            puts "Creating folder: #{access_code}.#{key}" if opts[:verbose] # Issue 2
+            reg = create_folder(:key => key)
+          end
           reg.merge(value, opts) unless reg.nil?
         elsif reg.nil? && should_create?(key, opts)
+          puts "Creating property: #{access_code}.#{key} = #{value.inspect}" if opts[:verbose] # Issue 2
           create_property(:key => key, :value => value)
         else
           # don't overwrite
+          puts "Skipping existing property: #{access_code}.#{key}" if opts[:verbose] # Issue 2
         end
       end
 

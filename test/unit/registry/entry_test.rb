@@ -51,7 +51,8 @@ module Registry
         YAML.dump(data, out)
       end
 
-      Entry.import!(CONFIG, :env => 'dev')
+      # Issue 2
+      Entry.import!(CONFIG, :env => 'dev', :verbose => true)
 
       expected = {
         'dev' => {
