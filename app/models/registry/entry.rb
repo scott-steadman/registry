@@ -115,12 +115,11 @@ module Registry
     # call-seq
     #   Registry::Entry.import!('/path/to/my.yml')
     def self.import!(file_path = DEFAULT_YML_LOCATION, opts={})
-      hash = YAML.load_file(file_path)
-      default_entries = hash.delete(Registry::DEFAULTS_KEY) || {}
-      hash.each do |env, entries|
-        STDERR.puts "Importing: #{env}" if opts[:verbose]
-        root(env).merge(default_entries.deep_merge(entries), opts)
-      end
+      hash     = YAML.load_file(file_path)
+      defaults = hash.fetch(Registry::DEFAULTS_KEY, {})
+      env      = opts.fetch(:env, Rails.env)
+      STDERR.puts "Importing: #{env}" if opts[:verbose]
+      root(env).merge(defaults.deep_merge(hash[env]), opts)
     end
 
     # Return the root entry for an environment.
@@ -165,7 +164,7 @@ module Registry
     #
     # ==== Parameters
     #
-    # * +hash+ - Hash of field names and values 
+    # * +hash+ - Hash of field names and values
     #
     # call-seq:
     #   Registry.entry.root.child('/api').create_property(:key => 'enabled', :value => true)
@@ -185,7 +184,7 @@ module Registry
     #
     # ==== Parameters
     #
-    # * +hash+ - Hash of field names and values 
+    # * +hash+ - Hash of field names and values
     #
     # call-seq:
     #   Registry::Entry.root.create_folder(:key => 'api' :label => 'API', :description => 'API Settings')

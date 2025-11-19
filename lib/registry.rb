@@ -102,7 +102,8 @@ module Registry
   def self.import(file, opts={})
     if opts[:testing]
       hash = YAML.load_file(file)
-      hash = (hash[DEFAULTS_KEY] || {}).deep_merge(hash[Rails.env.to_s])
+      env  = opts.fetch(:env, Rails.env)
+      hash = hash.fetch(DEFAULTS_KEY, {}).deep_merge(hash.fetch(env.to_s, {}))
       @registry = RegistryWrapper.new(hash)
       return
     end

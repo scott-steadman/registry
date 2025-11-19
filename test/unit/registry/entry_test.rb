@@ -51,7 +51,7 @@ module Registry
         YAML.dump(data, out)
       end
 
-      Entry.import!(CONFIG)
+      Entry.import!(CONFIG, :env => 'dev')
 
       expected = {
         'dev' => {
