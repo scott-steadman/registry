@@ -11,7 +11,7 @@ module CaptureRubyWarnings
 end
 Warning.extend(CaptureRubyWarnings)
 
-unless defined?($SKIP_COVERAGE)
+if !defined?($SKIP_COVERAGE) && ENV['SKIP_COVERAGE'] != 'true'
   require 'simplecov'
   SimpleCov.start do
     coverage_dir 'public/coverage'
