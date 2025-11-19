@@ -17,6 +17,7 @@ bundle install
 # Show which tests are being run and their results
 export TEST_OPTS="--verbose --no-show-detail-immediately"
 #export TEST_OPTS="--verbose --no-show-detail-immediately --stop-on-failure"
+export SKIP_COVERAGE="true"
 
 rm -f db/*.sqlite3
 bundle exec rake db:create db:migrate
