@@ -160,12 +160,12 @@ class RegistryTest < ActiveSupport::TestCase
     }
     Registry::Entry.root.merge(reg)
 
-    assert_equal nil, Registry.prevent_reset?
+    assert !Registry.prevent_reset?
     Registry.prevent_reset!
     Registry.api.with(:enabled => true) do
       # nothing
     end
-    assert_equal true, Registry.prevent_reset?
+    assert Registry.prevent_reset?
   end
 
   test 'registry updates via console' do

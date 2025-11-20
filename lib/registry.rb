@@ -31,14 +31,15 @@ module Registry
   #   Registry.api.request_limit? # => 1
   #
   def self.method_missing(method, *args)
-    reset if should_reset?
+    reset                    if should_reset?
+    load_registry_from_cache if @registry.nil?
 
-    @registry ||= begin
-      registry_hash = Rails.cache.fetch(cache_key) {Entry.root.export}
-      RegistryWrapper.new(registry_hash)
-    end
+    add_wrapper_methods_for(method)
 
     @registry.send(method, *args)
+  rescue NoMethodError
+    reset
+    raise
   end
 
   # Reset the registry.
@@ -47,7 +48,7 @@ module Registry
   #
   # ==== Parameters
   #
-  # * +clear_cache+ - Optional, whether to clear the Rails cache after reset.
+  # * +clear_cache+ - Optional, whether to clear the cache after reset.
   #
   def self.reset(clear_cache=nil)
     return if prevent_reset?
@@ -118,7 +119,7 @@ module Registry
 
   # :nodoc:
   def self.prevent_reset?
-    defined?(@prevent_reset) && @prevent_reset
+    (defined?(@prevent_reset) && @prevent_reset) || last_reset_time.to_i > get_cached_at.to_i
   end
 
   # Return changes made at the end of a path
@@ -133,6 +134,11 @@ module Registry
   #   Registry.versions('api/enabled', 'qa') #=> changes made to enabled flag in QA environment.
   def self.versions(path, env=Rails.env)
     Entry.root(env).child(path).versions
+  end
+
+  def self.to_hash
+    load_registry_from_cache if @registry.nil?
+    @registry.to_hash
   end
 
 protected
@@ -154,13 +160,49 @@ protected
 
   # :nodoc:
   def self.clear_cache(env=Rails.env.to_s)
-    Rails.cache.delete(cache_key(env))
+    set_cached_at
+    configuration.cache.delete(cache_key(env))
+  end
+
+  # :nodoc:
+  def self.force_cache(env=Rails.env.to_s)
+    set_cached_at
+    configuration.cache.write(cache_key(env), Entry.root.export)
   end
 
 private
 
+  def self.cached_at_key
+    "#{cache_key}-cached_at"
+  end
+
+  def self.set_cached_at
+    configuration.cache.write(cached_at_key, Time.now.to_i)
+  end
+
+  def self.get_cached_at
+    configuration.cache.read(cached_at_key)
+  end
+
   def self.should_reset?
     false
+  end
+
+  def self.add_wrapper_methods_for(method)
+    module_eval %{
+      def self.#{method}(*args)
+        load_registry_from_cache if @registry.nil?
+        @registry.#{method}(*args)
+      end
+    }, __FILE__, __LINE__
+  end
+
+  def self.load_registry_from_cache
+    env      = Rails.env.to_s
+    reg_hash = configuration.cache.read(cache_key(env))
+    reg_hash = force_cache(env) if reg_hash.try(:size).to_i < 10
+
+    @registry = RegistryWrapper.new(reg_hash)
   end
 
   class RegistryWrapper
@@ -252,7 +294,7 @@ private
       Entry.root.child(@parent_path + '/' + key).update_attributes(:value => value)
     end
 
-  end
+  end # class RegistryWrapper
 
 end # module Registry
 

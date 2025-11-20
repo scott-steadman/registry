@@ -1,6 +1,13 @@
 module Registry
   class Config
 
+    attr_accessor :cache, :auto_create_root
+
+    def initialize
+      @cache            = Rails.cache
+      @auto_create_root = true
+    end
+
     # Permission check used by the Registry UI.
     #
     # call-seq:
