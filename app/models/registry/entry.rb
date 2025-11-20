@@ -127,11 +127,14 @@ module Registry
     # ==== Parameters
     #
     # * +env+ - Optional environment (defaults to Rails.env)
+    # * +opts+ - Optional options (defaults to {:auto_create => true})
     #
     # call-seq:
     #   Registry::Entry.root
     def self.root(env=Rails.env)
-      first(:conditions => ['parent_id IS NULL AND env = ?', env]) || Folder.create(:env => env, :key => ROOT_ACCESS_KEY, :label => ROOT_LABEL)
+      ret = first(:conditions => ['parent_id IS NULL AND env = ?', env], :order => :id)
+      return ret unless Registry.configuration.auto_create_root
+      ret || Folder.create(:env => env, :key => ROOT_ACCESS_KEY, :label => ROOT_LABEL)
     end
 
     # Return an array ancestor entries.
