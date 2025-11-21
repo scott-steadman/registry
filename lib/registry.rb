@@ -32,7 +32,7 @@ module Registry
   #
   def self.method_missing(method, *args)
     reset                    if should_reset?
-    load_registry_from_cache if @registry.nil?
+    load_registry_from_cache if !defined?(@registry) || @registry.nil?
 
     add_wrapper_methods_for(method)
 
@@ -59,7 +59,7 @@ module Registry
 
   # When the registry was last reset.
   def self.last_reset_time
-    @last_reset_time
+    defined?(@last_reset_time) ? @last_reset_time : nil
   end
 
   # Import registry values from yml file.
