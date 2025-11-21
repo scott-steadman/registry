@@ -167,21 +167,32 @@ protected
   # :nodoc:
   def self.force_cache(env=Rails.env.to_s)
     set_cached_at
-    configuration.cache.write(cache_key(env), Entry.root.export)
+    cache_set(cache_key(env), Entry.root.export)
   end
 
 private
+
+  def self.cache_get(key)
+    value = configuration.cache.read(key)
+    return nil unless value
+    Marshal.load(value)
+  end
+
+  def self.cache_set(key, value)
+    configuration.cache.write(key, Marshal.dump(value))
+    value
+  end
 
   def self.cached_at_key
     "#{cache_key}-cached_at"
   end
 
   def self.set_cached_at
-    configuration.cache.write(cached_at_key, Time.now.to_i)
+    cache_set(cached_at_key, Time.now.to_i)
   end
 
   def self.get_cached_at
-    configuration.cache.read(cached_at_key)
+    cache_get(cached_at_key)
   end
 
   def self.should_reset?
@@ -199,7 +210,7 @@ private
 
   def self.load_registry_from_cache
     env      = Rails.env.to_s
-    reg_hash = configuration.cache.read(cache_key(env))
+    reg_hash = cache_get(cache_key(env))
     reg_hash = force_cache(env) if reg_hash.try(:size).to_i < 10
 
     @registry = RegistryWrapper.new(reg_hash)
