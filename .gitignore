@@ -9,5 +9,6 @@ Gemfile.lock
 .bundle
 tmp/
 vendor/bundle
+vendor
 config/registry.yml
 public/coverage
