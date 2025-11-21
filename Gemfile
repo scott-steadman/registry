@@ -20,7 +20,9 @@ group :development, :test do
   gem 'rake'
   gem 'simplecov',       :require => false
   gem 'sqlite3', '1.6.9'
-  gem 'test-unit', '3.6.2' # >3.6.3 have problems with elapsed_time
+  # Rails-LTS uses test-unit 3.1.5
+  # Versions after 3.6.2 have a bug that prevents bundle exec bin/test from running
+  gem 'test-unit',    '3.6.2'
 end
 
 group :vscode do
