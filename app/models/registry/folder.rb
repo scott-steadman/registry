@@ -24,15 +24,14 @@
 module Registry
   class Folder < Registry::Entry
 
-    after_create :notify_create_listeners
-
     def folder?
       true
     end
 
   private
 
-    # Issue 2417
+    after_create :notify_create_listeners
+
     def notify_create_listeners
       return unless parent
 
@@ -41,7 +40,21 @@ module Registry
 
       klass.on_create_registry_folder(self)
 
-      return nil
+      nil
+    end
+
+    after_create :populate_from_parent_template
+
+    def populate_from_parent_template
+      return unless parent.try(:children)
+
+      template = parent.children.select {|folder| folder.key == '_template'}.first
+      return unless template
+
+      merge(template.export.except('_last_updated_at'))
+      Registry.reset
+
+      nil
     end
 
   end # class Folder
