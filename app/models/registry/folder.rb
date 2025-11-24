@@ -24,8 +24,24 @@
 module Registry
   class Folder < Registry::Entry
 
+    after_create :notify_create_listeners
+
     def folder?
       true
+    end
+
+  private
+
+    # Issue 2417
+    def notify_create_listeners
+      return unless parent
+
+      klass = parent.key.classify.constantize rescue return
+      return unless klass.respond_to?(:on_create_registry_folder)
+
+      klass.on_create_registry_folder(self)
+
+      return nil
     end
 
   end # class Folder
