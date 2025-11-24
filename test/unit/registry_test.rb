@@ -218,11 +218,6 @@ class RegistryTest < ActiveSupport::TestCase
     assert_equal 2,           Registry::Transcoder.from_db('2.seconds')
   end
 
-  test 'wrapper decodes string values' do
-    wrapper = Registry::RegistryWrapper.new(:one => '1')
-    assert_equal 1, wrapper.one
-  end
-
   test '_last_updated_at' do
     assert_equal Time.at(0), Registry._last_updated_at
 

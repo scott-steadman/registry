@@ -105,7 +105,7 @@ module Registry
       hash = YAML.load_file(file)
       env  = opts.fetch(:env, Rails.env)
       hash = hash.fetch(DEFAULTS_KEY, {}).deep_merge(hash.fetch(env.to_s, {}))
-      @registry = RegistryWrapper.new(hash)
+      @registry = Wrapper.new(hash)
       return
     end
 
@@ -213,100 +213,10 @@ private
     reg_hash = cache_get(cache_key(env))
     reg_hash = force_cache(env) if reg_hash.try(:size).to_i < 10
 
-    @registry = RegistryWrapper.new(reg_hash)
+    @registry = Wrapper.new(reg_hash)
   end
-
-  class RegistryWrapper
-
-    def initialize(hash, parent_path='')
-      @parent_path = parent_path
-      @hash = hash.dup
-    end
-
-    def method_missing(method, *args)
-      super
-    rescue NoMethodError
-      raise unless exists?(method)
-      add_methods_for(method)
-      send(method, *args)
-    end
-
-    def to_hash
-      @hash
-    end
-
-    def exists?(method)
-      @hash.key?(hash_key(method_name(method)))
-    end
-
-    def with(config_hash, &block)
-      result = nil
-      orig_config = {}
-
-      @saved_prevent_reset = Registry.prevent_reset?
-      begin
-        config_hash.each do |kk,vv|
-          orig_config[kk] = self.send(kk)
-          self.send("#{kk}=", vv, false)
-        end
-
-        Registry.prevent_reset!
-        result = block.call
-      ensure
-        Registry.allow_reset! unless @saved_prevent_reset
-        orig_config.each { |kk,vv| self.send("#{kk}=", vv, false) }
-      end
-
-      result
-    end
-
-  private
-
-    def method_name(method)
-      method.to_s.sub(/[\?=]{0,1}$/, '')
-    end
-
-    def hash_key(method)
-      @hash.keys.find {|key| key.to_s == method.to_s} || method
-    end
-
-    def add_methods_for(method)
-      method = method_name( method )
-
-      self.class_eval %{
-
-        def #{method}                                               # def foo
-          key = hash_key('#{method}')                               #   key = hash_key('foo')
-          ret = @hash[key]                                          #   ret = @hash[key]
-          if ret.is_a?(Hash)                                        #   if ret.is_a?(Hash)
-            path = @parent_path + '/#{method}'                      #     path = @parent_path + '/foo'
-            ret = self.class.new(ret, path)                         #     ret = self.class.new(ret, path)
-            @hash[key] = ret                                        #     @hash[key] = ret
-          elsif ret.is_a?(String)                                   #   elsif ret.is_a?(String)
-            ret = Registry::Transcoder.from_db(ret)                 #     ret = Registry::Transcoder.from_db(ret)
-          end                                                       #   end
-          ret                                                       #   ret
-        end                                                         # end
-
-        def #{method}=(value, save=true)                            # def foo=(value, save=true)
-          key = hash_key('#{method}')                               #   key = hash_key('foo')
-          @hash[key] = value                                        #   @hash[key] = value
-          update(key, value) if save                                #   update(key, value) if save
-        end                                                         # end
-
-        def #{method}?                                              # def foo?
-          !!@hash[hash_key('#{method}')]                            #   !!@hash[hash_key('foo')]
-        end                                                         # end
-
-      }, __FILE__, __LINE__
-    end
-
-    def update(key, value)
-      Entry.root.child(@parent_path + '/' + key).update_attributes(:value => value)
-    end
-
-  end # class RegistryWrapper
 
 end # module Registry
 
 require 'registry/transcoder'
+require 'registry/wrapper'
