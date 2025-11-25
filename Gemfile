@@ -2,33 +2,22 @@ source "http://www.rubygems.org"
 
 gemspec
 
-# Rails LTS sources for free Community plan
-git 'https://github.com/makandra/rails.git', :branch => '2-3-lts' do
-  gem 'rails', '~>2.3.18'
-#  gem 'actionmailer',     :require => false
-  gem 'actionpack',       :require => false
-  gem 'activerecord',     :require => false
-#  gem 'activeresource',   :require => false
-  gem 'activesupport',    :require => false
-  gem 'railties',         :require => false
-end
-
 group :development, :test do
-  gem 'annotate'
-  gem 'method_source'
+  gem 'annotaterb'
+  gem 'method_source' # for bin/test.unittest
 #  gem 'mocha', '0.11.4', :require => false
+  gem 'puma'
   gem 'rake'
   gem 'simplecov',       :require => false
   gem 'sqlite3', '1.6.9'
-  # Rails-LTS uses test-unit 3.1.5
-  # Versions after 3.6.2 have a bug that prevents bundle exec bin/test from running
-  gem 'test-unit',    '3.6.2'
 end
 
 group :vscode do
   gem 'debase',           :require => false
   gem 'debug',            :require => false
-  gem 'rdoc', '6.2.1.1',  :require => false
+  gem 'rainbow',          :require => false
+  gem 'rdbg',             :require => false
   gem 'ruby-debug-ide',   :require => false
+  gem 'ruby-lsp',         :require => false
   gem 'solargraph',       :require => false
 end
