@@ -9,8 +9,16 @@
       "type": "rdbg",
       "request": "launch",
       "useBundler": true,
-      "script": "bin/test",
-      "args": ["${file}:${lineNumber}"],
+      "script": "bin/rails",
+      "args": ["test", "${file}:${lineNumber}"],
+      "askParameters": false
+    },{
+      "name": "Start Rails Server",
+      "type": "rdbg",
+      "request": "launch",
+      "useBundler": true,
+      "script": "bin/rails",
+      "args": ["server", "-b 0.0.0.0"],
       "askParameters": false
     }
   ]

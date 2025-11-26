@@ -10,12 +10,9 @@
       }
     },{
       "label": "run all tests in file",
-      "group": {
-        "kind": "test",
-        "isDefault": true
-      },
+      "group": "test",
       "type": "shell",
-      "command": "bundle exec ${workspaceFolder}/bin/test ${file}",
+      "command": "rm log/test.log ; bundle exec rails test ${file}",
       "problemMatcher": [],
       "presentation": {
         "clear": true
@@ -24,10 +21,11 @@
       "label": "run current test in file",
       "group": "test",
       "type": "shell",
-      "command": "bundle exec ${workspaceFolder}/bin/test ${file}:${lineNumber}",
+      "command": "rm log/test.log ; bundle exec rails test ${file}:${lineNumber}",
       "problemMatcher": [],
       "presentation": {
         "clear": true
-      }
+      },
+    },
   ]
 }
