@@ -26,7 +26,7 @@ require 'acts_as_versioned'
 module Registry
   class Entry < ApplicationRecord
 
-#    acts_as_versioned :table_name => 'registry_entry_versions'
+    acts_as_versioned :table_name => 'registry_entry_versions'
 
     self.table_name = 'registry_entries'
 

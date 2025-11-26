@@ -186,7 +186,6 @@ module ActiveRecord #:nodoc:
           self.version_association_options  = {
                                                 :class_name  => "#{self.to_s}::#{versioned_class_name}",
                                                 :foreign_key => versioned_foreign_key,
-                                                :order => "#{version_column} ASC"
                                               }.merge(options[:association_options] || {})
 
           if block_given?
@@ -199,7 +198,7 @@ module ActiveRecord #:nodoc:
           end
 
           class_eval <<-CLASS_METHODS
-            has_many :versions, version_association_options do
+            has_many :versions, -> {order("#{version_column} ASC")}, **version_association_options do
               # finds earliest version of this record
               def earliest
                 @earliest ||= find(:first, :order => '#{version_column}')
@@ -250,7 +249,7 @@ module ActiveRecord #:nodoc:
 
           versioned_class.cattr_accessor :original_class
           versioned_class.original_class = self
-          versioned_class.set_table_name versioned_table_name
+          versioned_class.table_name = versioned_table_name
           versioned_class.belongs_to self.to_s.demodulize.underscore.to_sym,
             :class_name  => "::#{self.to_s}",
             :foreign_key => versioned_foreign_key
@@ -410,7 +409,7 @@ module ActiveRecord #:nodoc:
 
             return if connection.table_exists?(versioned_table_name)
 
-            self.connection.create_table(versioned_table_name, create_table_options) do |t|
+            self.connection.create_table(versioned_table_name, **create_table_options) do |t|
               t.column versioned_foreign_key, :integer
               t.column version_column, :integer
             end
