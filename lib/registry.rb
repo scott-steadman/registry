@@ -1,3 +1,6 @@
+require "registry/version"
+require "registry/engine"
+
 module Registry
 
   DEFAULTS_KEY = 'defaults' unless defined?(DEFAULTS_KEY)
@@ -217,6 +220,3 @@ private
   end
 
 end # module Registry
-
-require 'registry/transcoder'
-require 'registry/wrapper'

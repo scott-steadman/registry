@@ -1,15 +1,14 @@
-require 'test/unit'
 
 ENV['RAILS_ENV'] = 'test'
 
-module CaptureRubyWarnings
-  def warn(message)
-    return if message =~ /assigned but unused variable/
-    return if caller[0] =~ /vendor/ || message =~ /vendor/ # Ignore warnings from vendored code
-    super
-  end
-end
-Warning.extend(CaptureRubyWarnings)
+#module CaptureRubyWarnings
+#  def warn(message)
+#    return if message =~ /assigned but unused variable/
+#    return if caller[0] =~ /vendor/ || message =~ /vendor/ # Ignore warnings from vendored code
+#    super
+#  end
+#end
+#Warning.extend(CaptureRubyWarnings)
 
 if !defined?($SKIP_COVERAGE) && ENV['SKIP_COVERAGE'] != 'true'
   require 'simplecov'
@@ -22,6 +21,8 @@ if !defined?($SKIP_COVERAGE) && ENV['SKIP_COVERAGE'] != 'true'
   end
 end
 
+
+require 'pp'
 class Object
   def tap_pp(*args)
     pp [*args, self]
@@ -29,40 +30,16 @@ class Object
   end
 end
 
-require_relative '../config/environment'
-require 'action_controller/test_case'
+require_relative "../test/dummy/config/environment"
 
-class ActiveSupport::TestCase
+ActiveRecord::Migrator.migrations_paths = [ File.expand_path("../test/dummy/db/migrate", __dir__) ]
+ActiveRecord::Migrator.migrations_paths << File.expand_path("../db/migrate", __dir__)
+require "rails/test_help"
 
-  def with_login(id)
-    Registry.configure do |config|
-      config.user_id { id }
-    end
-    yield id
-  ensure
-    Registry.configure do |config|
-      config.user_id
-    end
-  end
-
-  def assert_hash(expected, result, so_far=nil)
-    diff = expected.keys - result.keys
-    assert_equal [], diff.map(&:to_s).sort, "Expected Keys missing#{so_far && " from: #{so_far}"}"
-
-    diff = result.keys - expected.keys
-    assert_equal [], diff.map(&:to_s).sort, "Unexpected Keys present#{so_far && " in: #{so_far}"}"
-
-    expected.keys.each do |key|
-      if expected[key].is_a?(Hash)
-        assert_hash(expected[key], result[key], "#{so_far}#{key}/")
-      elsif expected[key] == '__any__'
-        assert result.key?(key), "#{so_far}#{key} expected"
-      elsif expected[key].is_a?(Regexp) and not result[key].is_a?(Regexp)
-        assert_match expected[key], result[key], "#{so_far}#{key} mismatch"
-      else
-        assert_equal expected[key], result[key], "#{so_far}#{key} mismatch"
-      end
-    end
-  end
-
-end # class ActiveSupport::TestCase
+# Load fixtures from the engine
+if ActiveSupport::TestCase.respond_to?(:fixture_paths=)
+  ActiveSupport::TestCase.fixture_paths = [ File.expand_path("fixtures", __dir__) ]
+  ActionDispatch::IntegrationTest.fixture_paths = ActiveSupport::TestCase.fixture_paths
+  ActiveSupport::TestCase.file_fixture_path = File.expand_path("fixtures", __dir__) + "/files"
+  ActiveSupport::TestCase.fixtures :all
+end

@@ -1,6 +1,8 @@
-require(File.join(File.dirname(__FILE__), 'config', 'boot'))
+require "bundler/setup"
 
-require 'rake'
-require 'rake/testtask'
+APP_RAKEFILE = File.expand_path("test/dummy/Rakefile", __dir__)
+load "rails/tasks/engine.rake"
 
-require 'tasks/rails'
+load "rails/tasks/statistics.rake"
+
+require "bundler/gem_tasks"

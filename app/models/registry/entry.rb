@@ -21,11 +21,10 @@
 #  index_registry_entries_on_parent_id_and_key  (parent_id,key)
 #
 
-require 'registry'
 require 'acts_as_versioned'
 
 module Registry
-  class Entry < ActiveRecord::Base
+  class Entry < ApplicationRecord
 
     acts_as_versioned :table_name => 'registry_entry_versions'
 

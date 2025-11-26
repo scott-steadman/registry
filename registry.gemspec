@@ -1,20 +1,18 @@
-lib = File.expand_path('../lib', __FILE__)
-$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require_relative "lib/registry/version"
 
-Gem::Specification.new do |gem|
-  gem.name          = "registry"
-  gem.version       = IO.read('VERSION')
-  gem.authors       = ["Michael Berkovich", "Scott Steadman"]
-  gem.email         = ['michael@geni.com', 'scott.steadman@geni.com']
-  gem.description   = %q{Engine for controlling application behavior through configurable properties}
-  gem.summary       = gem.description
-  gem.homepage      = "https://github.com/scott-steadman/registry"
-  gem.license       = 'MIT'
+Gem::Specification.new do |spec|
+  spec.name        = "registry"
+  spec.version     = Registry::VERSION
+  spec.authors     = ["Michael Berkovich", "Scott Steadman"]
+  spec.email       = ['michael@geni.com', 'scott.steadman@geni.com']
+  spec.homepage    = "https://github.com/scott-steadman/registry"
+  spec.summary     = spec.description
+  spec.description = %q{Engine for controlling application behavior through configurable properties}
+  spec.license     = 'MIT'
 
-  gem.add_dependency 'rails', '~> 8.0.0'
+  spec.files = Dir.chdir(File.expand_path(__dir__)) do
+    Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
+  end
 
-  gem.files         = `git ls-files`.split($/)
-  gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
-  gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
-  gem.require_paths = ['lib']
+  spec.add_dependency 'rails', '~> 8.0.0'
 end
