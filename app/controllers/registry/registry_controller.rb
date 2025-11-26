@@ -1,5 +1,4 @@
 class Registry::RegistryController < ApplicationController
-  unloadable
 
   def index
     # Render the UI in an iframe to prevent conflicts between ExtJS and the hosting app's javascript library.
@@ -89,7 +88,7 @@ class Registry::RegistryController < ApplicationController
       results[:total] = 1
 
     elsif request.delete?
-      if node = Registry::Entry.find_by_id(params[:properties]) 
+      if node = Registry::Entry.find_by_id(params[:properties])
         node.update_attributes(:user_id => registry_user_id)
         node.destroy
       end

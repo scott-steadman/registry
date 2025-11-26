@@ -1,12 +1,12 @@
-class CreateRegistry < ActiveRecord::Migration
+class CreateRegistry < ActiveRecord::Migration[8.0]
   def self.up
     create_table :registry_entries do |t|
-      t.string  :env,       :nil => false, :limit => 32
+      t.string  :env,       :null => false, :limit => 32
       t.integer :parent_id
 
-      t.string  :key,       :nil => false
-      t.string  :type,      :nil => false, :limit => 64
-      t.string  :value,     :nil => false
+      t.string  :key,       :null => false
+      t.string  :type,      :null => false, :limit => 64
+      t.string  :value,     :null => false
 
       t.string  :label
       t.string  :description

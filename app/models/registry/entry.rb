@@ -26,12 +26,12 @@ require 'acts_as_versioned'
 module Registry
   class Entry < ApplicationRecord
 
-    acts_as_versioned :table_name => 'registry_entry_versions'
+#    acts_as_versioned :table_name => 'registry_entry_versions'
 
-    set_table_name :registry_entries
+    self.table_name = 'registry_entries'
 
-    belongs_to :parent,     :class_name => 'Entry', :foreign_key => 'parent_id'
-    has_many   :children,   :class_name => 'Entry', :foreign_key => 'parent_id', :order => 'key asc', :dependent => :destroy
+    belongs_to :parent,                          :class_name => 'Entry', :foreign_key => 'parent_id'
+    has_many   :children, -> {order('key asc')}, :class_name => 'Entry', :foreign_key => 'parent_id', :dependent => :destroy
 
     before_save :ensure_env
     before_save :normalize_key

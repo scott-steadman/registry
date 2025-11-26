@@ -1,4 +1,4 @@
-class AddVersion < ActiveRecord::Migration
+class AddVersion < ActiveRecord::Migration[8.0]
   def self.up
     add_column :registry_entries, :version, :integer
     Registry::Entry.create_versioned_table
