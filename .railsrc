@@ -1,0 +1,17 @@
+--mountable
+--database=postgresql
+--skip-action-cable
+--skip-action-mailer
+--skip-action-mailbox
+--skip-action-text
+--skip-active-storage
+--skip-bootsnap
+--skip-bundle
+--skip-devcontainer
+--skip-docker
+--skip-git
+--skip-kamal
+--skip-keeps
+--skip-hotwire
+--skip-solid
+--skip-thruster
