@@ -12,7 +12,7 @@
       "label": "run all tests in file",
       "group": "test",
       "type": "shell",
-      "command": "rm log/test.log ; bundle exec rails test ${file}",
+      "command": "rm log/test.log ; bundle exec rails test ${file} --verbose --fail-fast --seed 0",
       "problemMatcher": [],
       "presentation": {
         "clear": true
