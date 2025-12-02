@@ -35,7 +35,7 @@ class Registry::RegistryController < ApplicationController
         fld = Registry::Folder.create(params[:folder].merge(:parent => parent, :user_id => registry_user_id))
       else
         fld = Registry::Entry.find(params[:folder_id])
-        fld.update_attributes(params[:folder].merge(:user_id => registry_user_id))
+        fld.update(params[:folder].merge(:user_id => registry_user_id))
       end
     else
       fld = Registry::Entry.find_by_id(params[:folder_id]) unless params[:folder_id].blank?
@@ -54,12 +54,12 @@ class Registry::RegistryController < ApplicationController
         prop = Registry::Entry.create(params[:property].merge(:parent => parent, :user_id => registry_user_id))
       else
         prop = Registry::Entry.find_by_id(params[:prop_id]) || Registry::Entry.new(:parent => parent)
-        prop.update_attributes(:key          => params[:property][:key],
-                               :label        => params[:property][:label],
-                               :description  => params[:property][:description],
-                               :value        => params[:property][:value],
-                               :user_id      => registry_user_id
-                              )
+        prop.update(:key          => params[:property][:key],
+                    :label        => params[:property][:label],
+                    :description  => params[:property][:description],
+                    :value        => params[:property][:value],
+                    :user_id      => registry_user_id
+                    )
       end
     else
       prop = Registry::Entry.find_by_id(params[:prop_id]) unless params[:prop_id].blank?
@@ -83,13 +83,13 @@ class Registry::RegistryController < ApplicationController
 
     elsif request.put?
       item = Registry::Entry.find_by_id(params[:properties][:id])
-      item.update_attributes("value" => params[:properties][:value], :user_id => registry_user_id)
+      item.update("value" => params[:properties][:value], :user_id => registry_user_id)
       results[:properties] << item.to_grid_property_hash
       results[:total] = 1
 
     elsif request.delete?
       if node = Registry::Entry.find_by_id(params[:properties])
-        node.update_attributes(:user_id => registry_user_id)
+        node.update(:user_id => registry_user_id)
         node.destroy
       end
     end
@@ -100,7 +100,7 @@ class Registry::RegistryController < ApplicationController
   def revisions
     results = {:success => true, :revisions => []}
 
-    @revisions = Registry::Entry::Version.all(:conditions => ['entry_id = ? OR parent_id = ?', params[:id], params[:id]], :order => 'id DESC')
+    @revisions = Registry::Entry::Version.where(['entry_id = ? OR parent_id = ?', params[:id], params[:id]]).order('id DESC')
     @revisions.each do |revision|
       results[:revisions] << {
         'id'      => revision.id.to_s,

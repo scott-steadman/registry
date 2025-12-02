@@ -4,7 +4,7 @@ module Registry
     attr_accessor :cache, :auto_create_root
 
     def initialize
-      @cache            = Rails.cache
+      @cache            = nil
       @auto_create_root = true
     end
 
@@ -18,7 +18,7 @@ module Registry
       if block_given?
         silence_warnings do
           Registry::RegistryController.send(:define_method, :permission_check, &blk)
-          Registry::RegistryController.before_filter(:permission_check)
+          Registry::RegistryController.before_action(:permission_check)
         end
       else
         Registry::RegistryController.filter_chain.delete_if { |ii| :permission_check == ii.method }

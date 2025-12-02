@@ -1,9 +1,9 @@
 require 'test_helper'
 
-class RegistryTest < ActiveSupport::TestCase
+class RegistryTest < Registry::TestCase
 
   def setup
-    Registry::Entry.delete_all # for some reason transactions are not working here
+    Registry.allow_reset!
     Registry.reset(true)
   end
 

@@ -220,3 +220,7 @@ private
   end
 
 end # module Registry
+
+require "registry/config"
+require "registry/wrapper"
+require "registry/transcoder"

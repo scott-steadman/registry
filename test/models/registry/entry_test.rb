@@ -1,12 +1,11 @@
 require 'test_helper'
 
 module Registry
-  class EntryTest < ActiveRecord::TestCase
+  class EntryTest < TestCase
 
     CONFIG = "#{Rails.root}/tmp/registry.yml"
 
     def setup
-      Registry::Entry.delete_all
       Dir.mkdir("#{Rails.root}/tmp") rescue nil
       File.delete(CONFIG)            rescue nil
     end
@@ -69,13 +68,13 @@ module Registry
       prop = Entry.root.create_property(:key => 'one', :value => 'one')
 
       assert_difference 'Registry::Entry::Version.count', 1 do
-        prop.update_attributes(:value => 'two')
+        prop.update(:value => 'two')
       end
 
       prop.revert_to!(1)
       assert_equal 'one', prop.reload.value, 'Reversion failed'
 
-      prop.update_attributes(:value => 'three')
+      prop.update(:value => 'three')
       assert_equal 3, prop.reload.version
     end
 

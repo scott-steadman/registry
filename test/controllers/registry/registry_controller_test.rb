@@ -2,10 +2,11 @@ require 'test_helper.rb'
 
 module Registry
   class RegistryControllerTest < ActionController::TestCase
+    include Engine.routes.url_helpers
 
     def setup
-      Registry::Entry.delete_all # clean slate
-      @root = Registry::Entry.root
+      @routes = Engine.routes
+      @root   = Entry.root
     end
 
     test 'index' do
@@ -194,7 +195,7 @@ module Registry
 
     test 'revisions get' do
       one = Registry::Entry.create!(:parent => @root, :key => 'one', :label => 'one', :value => '1')
-      one.update_attributes(:value => 2)
+      one.update(:value => 2)
 
       first = one.versions.first
       second = one.versions.last

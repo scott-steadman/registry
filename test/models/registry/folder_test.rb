@@ -1,7 +1,7 @@
 require 'test_helper'
 
 module Registry
-  class FolderTest < ActiveRecord::TestCase
+  class FolderTest < TestCase
 
     class DummyListener
       cattr_accessor :folder

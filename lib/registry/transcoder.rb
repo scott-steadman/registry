@@ -1,5 +1,8 @@
 require 'ipaddr'
 
+require_relative 'transcoder/base'
+require_relative 'transcoder/dsl'
+
 Registry.configure do |config|
 
   # Array transcoder
@@ -16,11 +19,11 @@ Registry.configure do |config|
   # boolean transcoder
   config.add_transcoder do
     to_db   {|value|  value ? 'true' : 'false'}
-    from_db {|string| 'true' == string}
+    from_db {|string| ['t', 'true'].include?(string)}
 
     matches do |value|
       value.is_a?(TrueClass) or value.is_a?(FalseClass) or # to_db
-      value.to_s =~ /\A(true|false)\z/i                    # from_db
+      value.to_s =~ /\A(true|t|false|f)\z/i                # from_db
     end
   end
 
@@ -67,9 +70,12 @@ Registry.configure do |config|
       begin
         eval(string)
       rescue SyntaxError => ex
-        return string unless ex.message =~ /octal/  # conversion failed, just return value
-        from, range, to = string.match(/(.*)\s*(\.\.\.?)\s*(.*)/).to_a[1 .. -1]
-        eval("#{from.to_i} #{range} #{to.to_i}")
+        if ex.message =~ /octal|unexpected integer/
+          from, range, to = string.match(/(.*)\s*(\.\.\.?)\s*(.*)/).to_a[1 .. -1]
+          eval("#{from.to_i} #{range} #{to.to_i}")
+        else
+          string # conversion failed, just return value
+        end
       end
     end
 

@@ -21,21 +21,19 @@
 #  index_registry_entries_on_parent_id_and_key  (parent_id,key)
 #
 
-require 'acts_as_versioned'
-
 module Registry
   class Entry < ApplicationRecord
 
-    acts_as_versioned :table_name => 'registry_entry_versions'
-
     self.table_name = 'registry_entries'
 
-    belongs_to :parent,                          :class_name => 'Entry', :foreign_key => 'parent_id'
+    include Versioned
+    self.versioned_table_name = 'registry_entry_versions'
+
+    belongs_to :parent,                          :class_name => 'Entry', :foreign_key => 'parent_id', :required => false
     has_many   :children, -> {order('key asc')}, :class_name => 'Entry', :foreign_key => 'parent_id', :dependent => :destroy
 
     before_save :ensure_env
-    before_save :normalize_key
-    before_save :normalize_value
+    before_save :ensure_type
 
     # after_update caused intermittent cache clearing
     after_save  :clear_cache
@@ -131,9 +129,17 @@ module Registry
     # call-seq:
     #   Registry::Entry.root
     def self.root(env=Rails.env)
-      ret = first(:conditions => ['parent_id IS NULL AND env = ?', env], :order => :id)
+      ret = where(['parent_id IS NULL AND env = ?', env]).order(:id).first
       return ret unless Registry.configuration.auto_create_root
-      ret || Folder.create(:env => env, :key => ROOT_ACCESS_KEY, :label => ROOT_LABEL)
+      ret || Folder.create!(:env => env, :key => ROOT_ACCESS_KEY, :label => ROOT_LABEL)
+    end
+
+    def key=(new_key)
+      write_attribute(:key, new_key.is_a?(String) ? new_key : Transcoder.to_db(new_key))
+    end
+
+    def value=(new_value)
+      write_attribute(:value, new_value.is_a?(String) ? new_value : Transcoder.to_db(new_value))
     end
 
     # Return an array ancestor entries.
@@ -153,7 +159,7 @@ module Registry
     #   Registry::Entry.root.child('/api/enabled')
     def child(path)
       path.split('/').reject{|ii| ii.blank?}.inject(self) do |parent, key|
-        parent.children.find_by_key(key).tap {|ii| raise ArgumentError.new("#{parent.key} has no child named #{key}") if ii.nil?}
+        parent.children.find_by(:key => key).tap {|ii| raise ArgumentError.new("#{parent.key} has no child named #{key}") if ii.nil?}
       end
     end
 
@@ -247,7 +253,7 @@ module Registry
     def export(hash={}, entries=nil)
 
       if entries.nil?
-        entries = Entry.all(:conditions => ['env = ? and id != ?', env, id])
+        entries = Entry.where(['env = ? and id != ?', env, id])
         hash['_last_updated_at'] = entries.inject(Time.at(0)) {|old_max, entry| [old_max, entry.updated_at].max}
       end
 
@@ -285,7 +291,7 @@ module Registry
     def merge(hash, opts={})
       hash.each do |key, value|
         key = Transcoder.to_db(key)
-        reg = Entry.first(:conditions => ['parent_id = ? AND key = ?', self, key])
+        reg = Entry.where(['parent_id = ? AND key = ?', self, key]).first
         if value.is_a?(Hash)
           if reg.nil? && should_create?(key, opts)
             puts "Creating folder: #{access_code}.#{key}" if opts[:verbose] # Issue 2
@@ -324,12 +330,9 @@ module Registry
       self.env ||= parent.env
     end
 
-    def normalize_key
-      self.key = Transcoder.to_db(key) unless key.is_a?(String)
-    end
-
-    def normalize_value
-      self.value = Transcoder.to_db(value) unless value.is_a?(String)
+    # for some reason type doesn't get set for Entry
+    def ensure_type
+      self.type ||= self.class.name
     end
 
     def should_create?(key, opts)
@@ -337,7 +340,7 @@ module Registry
     end
 
     def no_prior_deleted_version?(key)
-      Registry::Entry::Version.first(:conditions => {:parent_id => id, :key => key}).nil?
+      Registry::Entry::Version.where(:parent_id => id, :key => key).none?
     end
 
     def clear_cache
@@ -345,7 +348,7 @@ module Registry
     end
 
     def log_deletion
-      update_attributes(:notes => '*** entry deleted ***')
+      update(:notes => '*** entry deleted ***')
     end
 
   end # class Entry

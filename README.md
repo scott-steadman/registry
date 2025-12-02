@@ -34,7 +34,7 @@ end
 # app/controllers/api_controller.rb
 class ApiController < ActionController::Base
 
-  before_filter :ensure_api_enabled, :check_rate_limit
+  before_action :ensure_api_enabled, :check_rate_limit
 
   ...
 

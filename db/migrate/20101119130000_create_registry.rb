@@ -5,11 +5,11 @@ class CreateRegistry < ActiveRecord::Migration[8.0]
       t.integer :parent_id
 
       t.string  :key,       :null => false
-      t.string  :type,      :null => false, :limit => 64
-      t.string  :value,     :null => false
+      t.text    :type,      :null => false
+      t.text    :value
 
-      t.string  :label
-      t.string  :description
+      t.text    :label
+      t.text    :description
 
       t.integer :user_id
 

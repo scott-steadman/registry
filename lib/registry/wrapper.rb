@@ -98,7 +98,7 @@ module Registry
     end
 
     def update(key, value)
-      entry.child(key).update_attributes(:value => value)
+      entry.child(key).update(:value => value)
     end
 
     def entry
