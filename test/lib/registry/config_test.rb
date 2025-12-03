@@ -4,17 +4,20 @@ module Registry
   class ConfigTest < Registry::TestCase
 
     test 'permission_check' do
+      config = Registry.configuration
       controller = Registry::RegistryController.new
 
-      assert_raises(NoMethodError) do
+      assert_raises(NoMethodError, 'Precondition failed: permission_check should be absent') do
         controller.permission_check
       end
 
-      Registry.configure do |config|
-        config.permission_check { true }
-      end
+      config.permission_check { true }
+      assert_equal true, controller.permission_check, 'permission_check should be set'
 
-      assert_equal true, controller.permission_check
+      config.permission_check
+      assert_raises(NoMethodError, 'permission_check should be removed') do
+        controller.permission_check
+      end
     end
 
   end # class ConfigTest

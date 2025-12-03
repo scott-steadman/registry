@@ -7,8 +7,24 @@ module Registry
 
   # Configure the Registry Engine.
   #
+  # The passed block will be excuted immediately.
+  #
   # call-seq:
   #   Registry.configure do |config|
+  #     config.cache = Rails.cache
+  #   end
+  #
+  def self.configure
+    yield configuration
+  end
+
+  # Initialize the Registry Engine.
+  #
+  # The passed block will be excuted after the engine is initialized
+  # (ie all classes are loaded).
+  #
+  # call-seq:
+  #   Registry.after_initialize do |config|
   #
   #     # permission check used by Registry UI
   #     config.permission_check { current_user.admin? }
@@ -17,8 +33,10 @@ module Registry
   #     config.layout = 'admin'
   #   end
   #
-  def self.configure
-    yield configuration
+  def self.after_initialize
+    Engine.initializer 'registry.initialize' do |app|
+      yield Registry.configuration
+    end
   end
 
   # Returns the current registry configuration

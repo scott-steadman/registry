@@ -21,7 +21,8 @@ module Registry
           Registry::RegistryController.before_action(:permission_check)
         end
       else
-        Registry::RegistryController.filter_chain.delete_if { |ii| :permission_check == ii.method }
+        Registry::RegistryController.skip_before_action(:permission_check)
+        Registry::RegistryController.send(:remove_method, :permission_check)
       end
     end
 
