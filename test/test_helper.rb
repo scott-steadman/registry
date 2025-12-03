@@ -21,7 +21,6 @@ if !defined?($SKIP_COVERAGE) && ENV['SKIP_COVERAGE'] != 'true'
   end
 end
 
-
 require 'pp'
 class Object
   def tap_pp(*args)

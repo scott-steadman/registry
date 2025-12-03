@@ -2,7 +2,7 @@ require 'test_helper'
 
 module Registry
   module Transcoder
-    class BaseTest < ActiveSupport::TestCase
+    class BaseTest < TestCase
 
       test 'transcoding' do
         assert_round_trip [1, 'one', true, :sym],             'array transcoding failed'
@@ -40,7 +40,7 @@ module Registry
       end
 
     private
-      
+
       def assert_round_trip(value, message)
         assert_equal value, Transcoder.from_db(Transcoder.to_db(value)), message
       end

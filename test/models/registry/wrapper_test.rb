@@ -1,7 +1,7 @@
 require 'test_helper'
 
 module Registry
-  class WrapperTest < ActiveSupport::TestCase
+  class WrapperTest < TestCase
 
     def setup
       Registry::Entry.delete_all # for some reason transactions are not working here

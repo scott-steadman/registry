@@ -2,7 +2,7 @@ require 'test_helper'
 
 module Registry
   module Transcoder
-    class DSLTest < ActiveSupport::TestCase
+    class DSLTest < TestCase
 
       test 'matches? returns false by default' do
         assert !instance.matches?(1)
@@ -34,7 +34,7 @@ module Registry
       end
 
     private
-      
+
       def instance
         @instance ||= DSL.new
       end
