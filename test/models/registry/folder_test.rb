@@ -20,7 +20,7 @@ module Registry
 
     test 'populate_from_parent_template' do
       expected = {'name' => 'example name', 'host' => 'example host'}
-      parent   = Folder.create!(:env => 'test')
+      parent   = Folder.create!(:env => 'test', :key => 'root')
       parent.merge('template_test' => {'_template' => expected})
 
       parent.child('template_test').merge('test' => {})
