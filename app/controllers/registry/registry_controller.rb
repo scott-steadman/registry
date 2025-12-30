@@ -1,3 +1,5 @@
+require_relative '../application_controller'
+
 class Registry::RegistryController < ApplicationController
 
   def index
