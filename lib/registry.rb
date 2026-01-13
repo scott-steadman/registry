@@ -100,7 +100,7 @@ module Registry
   #   Registry.import("#{Rails.root}/config/defaults.yml", testing: true)
   #   Registry.import("#{Rails.root}/config/defaults.yml", purge: true)
   #
-  def self.import(file, env: Rails.env, testing: false, purge: false)
+  def self.import(file, env: Rails.env, testing: false, purge: false, verbose: false)
     if testing
       hash = YAML.load_file(file)
       hash = hash.fetch(DEFAULTS_KEY, {}).deep_merge(hash.fetch(env.to_s, {}))
@@ -112,7 +112,7 @@ module Registry
       Entry::Version.delete_all
     end
 
-    Entry.import!(file, env: env)
+    Entry.import!(file, env:, verbose:)
   end
 
   # :nodoc:
