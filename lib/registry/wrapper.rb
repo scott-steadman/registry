@@ -1,9 +1,10 @@
 module Registry
   class Wrapper
 
-    def initialize(hash, parent_path='')
+    def initialize(hash, parent_path='', save: true)
+      @hash        = hash.dup
       @parent_path = parent_path
-      @hash = hash.dup
+      @save        = save
     end
 
     def method_missing(method, *args)
@@ -76,7 +77,7 @@ module Registry
           ret = @hash[key]                                          #   ret = @hash[key]
           if ret.is_a?(Hash)                                        #   if ret.is_a?(Hash)
             path = @parent_path + '/#{method}'                      #     path = @parent_path + '/foo'
-            ret = self.class.new(ret, path)                         #     ret = self.class.new(ret, path)
+            ret = self.class.new(ret, path, save: @save)            #     ret = self.class.new(ret, path, save: @save)
             @hash[key] = ret                                        #     @hash[key] = ret
           elsif ret.is_a?(String)                                   #   elsif ret.is_a?(String)
             ret = Registry::Transcoder.from_db(ret)                 #     ret = Registry::Transcoder.from_db(ret)
@@ -84,7 +85,7 @@ module Registry
           ret                                                       #   ret
         end                                                         # end
 
-        def #{method}=(value, save=true)                            # def foo=(value, save=true)
+        def #{method}=(value, save=@save)                           # def foo=(value, save=@save)
           key = hash_key('#{method}')                               #   key = hash_key('foo')
           @hash[key] = value                                        #   @hash[key] = value
           update(key, value) if save                                #   update(key, value) if save

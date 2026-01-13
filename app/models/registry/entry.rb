@@ -111,12 +111,11 @@ module Registry
     #
     # call-seq
     #   Registry::Entry.import!('/path/to/my.yml')
-    def self.import!(file_path = DEFAULT_YML_LOCATION, opts={})
+    def self.import!(file_path = DEFAULT_YML_LOCATION, env: Rails.env, verbose: false)
       hash     = YAML.load_file(file_path)
       defaults = hash.fetch(Registry::DEFAULTS_KEY, {})
-      env      = opts.fetch(:env, Rails.env)
-      STDERR.puts "Importing: #{env}" if opts[:verbose]
-      root(env).merge(defaults.deep_merge(hash[env]), opts)
+      STDERR.puts "Importing: #{env}" if verbose
+      root(env).merge(defaults.deep_merge(hash[env]), {env: env, verbose: verbose})
     end
 
     # Return the root entry for an environment.

@@ -8,12 +8,12 @@ module Registry
     end
 
     test 'wrapper decodes string values' do
-      wrapper = Registry::Wrapper.new(:one => '1')
+      wrapper = Registry::Wrapper.new({one: '1'})
       assert_equal 1, wrapper.one
     end
 
     test 'merge' do
-      wrapper  = Registry::Wrapper.new(:one => '1')
+      wrapper  = Registry::Wrapper.new({one: '1'})
       expected = {:one => 1, 'two' => 2}
 
       # 3 = root Folder + two Entries

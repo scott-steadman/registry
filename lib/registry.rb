@@ -97,24 +97,22 @@ module Registry
   #
   # call-seq:
   #   Registry.import("#{Rails.root}/config/defaults.yml")
-  #   Registry.import("#{Rails.root}/config/defaults.yml", :purge => true)
-  #   Registry.import("#{Rails.root}/config/defaults.yml", :testing => true)
+  #   Registry.import("#{Rails.root}/config/defaults.yml", testing: true)
+  #   Registry.import("#{Rails.root}/config/defaults.yml", purge: true)
   #
-  def self.import(file, opts={})
-    if opts[:testing]
+  def self.import(file, env: Rails.env, testing: false, purge: false)
+    if testing
       hash = YAML.load_file(file)
-      env  = opts.fetch(:env, Rails.env)
       hash = hash.fetch(DEFAULTS_KEY, {}).deep_merge(hash.fetch(env.to_s, {}))
-      @registry = Wrapper.new(hash)
-      return
+      return @registry = Wrapper.new(hash, save: false)
     end
 
-    if opts[:purge]
+    if purge
       Entry.delete_all
       Entry::Version.delete_all
     end
 
-    Entry.import!(file, opts)
+    Entry.import!(file, env: env)
   end
 
   # :nodoc:

@@ -125,9 +125,12 @@ class RegistryTest < Registry::TestCase
     end
 
     assert_no_difference 'Registry::Entry.count' do
-      Registry.import('/tmp/foo.yml', :testing => true)
+      Registry.import('/tmp/foo.yml', testing: true)
     end
     assert_equal true, Registry.api.enabled?
+
+    Registry.api.enabled = false
+    assert_equal false, Registry.api.enabled?, 'modification after testing import should persist'
   end
 
   test 'with' do
