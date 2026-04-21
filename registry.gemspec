@@ -12,7 +12,7 @@ Gem::Specification.new do |gem|
   gem.license       = 'MIT'
 
   gem.add_dependency 'iconv'
-  gem.add_dependency 'rails', '~> 2.3.0'
+  gem.add_dependency 'rails'
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }

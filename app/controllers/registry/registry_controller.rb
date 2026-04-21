@@ -101,7 +101,11 @@ class Registry::RegistryController < ApplicationController
   def revisions
     results = {:success => true, :revisions => []}
 
-    @revisions = Registry::Entry::Version.all(:conditions => ['entry_id = ? OR parent_id = ?', params[:id], params[:id]], :order => 'id DESC')
+    @revisions = if defined?(NextRails) && NextRails.next?
+      Registry::Entry::Version.where('entry_id = ? OR parent_id = ?', params[:id], params[:id]).order('id DESC').all
+    else
+      Registry::Entry::Version.all(:conditions => ['entry_id = ? OR parent_id = ?', params[:id], params[:id]], :order => 'id DESC')
+    end
     @revisions.each do |revision|
       results[:revisions] << {
         'id'      => revision.id.to_s,

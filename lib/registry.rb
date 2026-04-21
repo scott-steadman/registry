@@ -218,5 +218,6 @@ private
 
 end # module Registry
 
+require 'registry/config'
 require 'registry/transcoder'
 require 'registry/wrapper'

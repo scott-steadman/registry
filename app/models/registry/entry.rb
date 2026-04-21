@@ -29,7 +29,11 @@ module Registry
 
     acts_as_versioned :table_name => 'registry_entry_versions'
 
-    set_table_name :registry_entries
+    if defined?(NextRails) && NextRails.next?
+      self.table_name = 'registry_entries'
+    else
+      set_table_name :registry_entries
+    end
 
     belongs_to :parent,     :class_name => 'Entry', :foreign_key => 'parent_id'
     has_many   :children,   :class_name => 'Entry', :foreign_key => 'parent_id', :order => 'key asc', :dependent => :destroy
@@ -132,7 +136,11 @@ module Registry
     # call-seq:
     #   Registry::Entry.root
     def self.root(env=Rails.env)
-      ret = first(:conditions => ['parent_id IS NULL AND env = ?', env], :order => :id)
+      ret = if defined?(NextRails) && NextRails.next?
+        where(:env => env, :parent_id => nil).order(:id).first
+      else
+        first(:conditions => ['parent_id IS NULL AND env = ?', env], :order => :id)
+      end
       return ret unless Registry.configuration.auto_create_root
       ret || Folder.create(:env => env, :key => ROOT_ACCESS_KEY, :label => ROOT_LABEL)
     end
@@ -248,7 +256,11 @@ module Registry
     def export(hash={}, entries=nil)
 
       if entries.nil?
-        entries = Entry.all(:conditions => ['env = ? and id != ?', env, id])
+        entries = if defined?(NextRails) && NextRails.next?
+          Entry.where(:env => env).where('id != ?', id).all
+        else
+          Entry.all(:conditions => ['env = ? and id != ?', env, id])
+        end
         hash['_last_updated_at'] = entries.inject(Time.at(0)) {|old_max, entry| [old_max, entry.updated_at].max}
       end
 
@@ -286,7 +298,11 @@ module Registry
     def merge(hash, opts={})
       hash.each do |key, value|
         key = Transcoder.to_db(key)
-        reg = Entry.first(:conditions => ['parent_id = ? AND key = ?', self, key])
+        reg = if defined?(NextRails) && NextRails.next?
+          Entry.where(:parent_id => self, :key => key).first
+        else
+          Entry.first(:conditions => ['parent_id = ? AND key = ?', self, key])
+        end
         if value.is_a?(Hash)
           if reg.nil? && should_create?(key, opts)
             puts "Creating folder: #{access_code}.#{key}" if opts[:verbose] # Issue 2
@@ -338,7 +354,11 @@ module Registry
     end
 
     def no_prior_deleted_version?(key)
-      Registry::Entry::Version.first(:conditions => {:parent_id => id, :key => key}).nil?
+      if defined?(NextRails) && NextRails.next?
+        Registry::Entry::Version.where(:parent_id => id, :key => key).first.nil?
+      else
+        Registry::Entry::Version.first(:conditions => {:parent_id => id, :key => key}).nil?
+      end
     end
 
     def clear_cache

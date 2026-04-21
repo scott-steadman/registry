@@ -36,7 +36,12 @@ module Rails
   class Boot
     def run
       load_initializer
-      Rails::Initializer.run(:set_load_path)
+      # Rails 3.0+ doesn't need Initializer.run(:set_load_path)
+      begin
+        Rails::Initializer.run(:set_load_path)
+      rescue ArgumentError, NoMethodError
+        # Rails 3.0+ - initializer works differently
+      end
     end
   end
 
@@ -52,7 +57,38 @@ module Rails
     def load_initializer
       self.class.load_rubygems
       load_rails_gem
-      require 'initializer'
+
+      # Patch Rails 3.0 gem files for Ruby 2.7+ compatibility before requiring rails
+      patch_rails_30_for_ruby_27
+
+      begin
+        require 'initializer'
+      rescue LoadError
+        require 'rails/all'
+      end
+
+      # Load Ruby 2.7 compatibility patches for Rails 3.0 after rails loads
+      rails_30_compat = File.expand_path('../../lib/core_ext/rails_30_ruby_27_compat', __FILE__)
+      require rails_30_compat if File.exist?("#{rails_30_compat}.rb")
+    end
+
+    def patch_rails_30_for_ruby_27
+      # Find Rails 3.0 activesupport gem
+      if defined?(Gem)
+        gem_spec = Gem.loaded_specs.values.find { |spec| spec.name == 'activesupport' && spec.version.to_s.start_with?('3.0.') }
+        return unless gem_spec
+
+        timezone_file = File.join(gem_spec.full_gem_path, 'lib/active_support/values/time_zone.rb')
+        return unless File.exist?(timezone_file)
+
+        content = File.read(timezone_file)
+
+        # Fix: def parse(str, now=now) - circular argument reference (syntax error in Ruby 2.7+)
+        if content.include?('def parse(str, now=now)')
+          content.gsub!(/def parse\(str, now=now\)/, "def parse(str, now=nil)\n      now ||= self.now")
+          File.write(timezone_file, content)
+        end
+      end
     end
 
     def load_rails_gem

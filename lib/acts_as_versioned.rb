@@ -250,7 +250,11 @@ module ActiveRecord #:nodoc:
 
           versioned_class.cattr_accessor :original_class
           versioned_class.original_class = self
-          versioned_class.set_table_name versioned_table_name
+          if defined?(NextRails) && NextRails.next?
+            versioned_class.table_name = versioned_table_name
+          else
+            versioned_class.set_table_name versioned_table_name
+          end
           versioned_class.belongs_to self.to_s.demodulize.underscore.to_sym, 
             :class_name  => "::#{self.to_s}", 
             :foreign_key => versioned_foreign_key

@@ -6,6 +6,7 @@ db/schema.rb*
 *.sqlite3
 *.swp
 Gemfile.lock
+Gemfile.next.lock
 .bundle
 tmp/
 vendor/bundle
