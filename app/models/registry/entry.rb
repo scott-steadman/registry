@@ -21,26 +21,19 @@
 #  index_registry_entries_on_parent_id_and_key  (parent_id,key)
 #
 
-require 'registry'
-require 'acts_as_versioned'
-
 module Registry
-  class Entry < ActiveRecord::Base
+  class Entry < ApplicationRecord
 
-    acts_as_versioned :table_name => 'registry_entry_versions'
+    self.table_name = 'registry_entries'
 
-    if defined?(NextRails) && NextRails.next?
-      self.table_name = 'registry_entries'
-    else
-      set_table_name :registry_entries
-    end
+    include Versioned
+    self.versioned_table_name = 'registry_entry_versions'
 
-    belongs_to :parent,     :class_name => 'Entry', :foreign_key => 'parent_id'
-    has_many   :children,   :class_name => 'Entry', :foreign_key => 'parent_id', :order => 'key asc', :dependent => :destroy
+    belongs_to :parent,                          :class_name => 'Entry', :foreign_key => 'parent_id'
+    has_many   :children, :class_name => 'Entry', :foreign_key => 'parent_id', :dependent => :destroy, :order => 'key asc'
 
     before_save :ensure_env
-    before_save :normalize_key
-    before_save :normalize_value
+    before_save :ensure_type
 
     # after_update caused intermittent cache clearing
     after_save  :clear_cache
@@ -56,7 +49,7 @@ module Registry
     # call-seq:
     #   Registry::Entry.environments #=> ['development', 'test', 'qa', 'stage', 'production']
     def self.environments
-      connection.select_values("SELECT DISTINCT env FROM #{table_name} WHERE parent_id IS NULL")
+      where('parent_id IS NULL').all.map(&:env).uniq.compact
     end
 
     # Export the registry to a YAML file and return the hash.
@@ -118,12 +111,11 @@ module Registry
     #
     # call-seq
     #   Registry::Entry.import!('/path/to/my.yml')
-    def self.import!(file_path = DEFAULT_YML_LOCATION, opts={})
+    def self.import!(file_path = DEFAULT_YML_LOCATION, env: Rails.env, verbose: false)
       hash     = YAML.load_file(file_path)
       defaults = hash.fetch(Registry::DEFAULTS_KEY, {})
-      env      = opts.fetch(:env, Rails.env)
-      STDERR.puts "Importing: #{env}" if opts[:verbose]
-      root(env).merge(defaults.deep_merge(hash[env]), opts)
+      STDERR.puts "Importing: #{env}" if verbose
+      root(env).merge(defaults.deep_merge(hash[env]), {env: env, verbose: verbose})
     end
 
     # Return the root entry for an environment.
@@ -136,13 +128,17 @@ module Registry
     # call-seq:
     #   Registry::Entry.root
     def self.root(env=Rails.env)
-      ret = if defined?(NextRails) && NextRails.next?
-        where(:env => env, :parent_id => nil).order(:id).first
-      else
-        first(:conditions => ['parent_id IS NULL AND env = ?', env], :order => :id)
-      end
+      ret = where(['parent_id IS NULL AND env = ?', env]).order('id').first
       return ret unless Registry.configuration.auto_create_root
-      ret || Folder.create(:env => env, :key => ROOT_ACCESS_KEY, :label => ROOT_LABEL)
+      ret || Folder.create!(:env => env, :key => ROOT_ACCESS_KEY, :label => ROOT_LABEL)
+    end
+
+    def key=(new_key)
+      write_attribute(:key, new_key.is_a?(String) ? new_key : Transcoder.to_db(new_key))
+    end
+
+    def value=(new_value)
+      write_attribute(:value, new_value.is_a?(String) ? new_value : Transcoder.to_db(new_value))
     end
 
     # Return an array ancestor entries.
@@ -256,11 +252,7 @@ module Registry
     def export(hash={}, entries=nil)
 
       if entries.nil?
-        entries = if defined?(NextRails) && NextRails.next?
-          Entry.where(:env => env).where('id != ?', id).all
-        else
-          Entry.all(:conditions => ['env = ? and id != ?', env, id])
-        end
+        entries = Entry.where(['env = ? and id != ?', env, id])
         hash['_last_updated_at'] = entries.inject(Time.at(0)) {|old_max, entry| [old_max, entry.updated_at].max}
       end
 
@@ -298,11 +290,7 @@ module Registry
     def merge(hash, opts={})
       hash.each do |key, value|
         key = Transcoder.to_db(key)
-        reg = if defined?(NextRails) && NextRails.next?
-          Entry.where(:parent_id => self, :key => key).first
-        else
-          Entry.first(:conditions => ['parent_id = ? AND key = ?', self, key])
-        end
+        reg = Entry.where(['parent_id = ? AND key = ?', self, key]).first
         if value.is_a?(Hash)
           if reg.nil? && should_create?(key, opts)
             puts "Creating folder: #{access_code}.#{key}" if opts[:verbose] # Issue 2
@@ -338,15 +326,12 @@ module Registry
     end
 
     def ensure_env
-      self.env ||= parent.env
+      self.env ||= parent&.env
     end
 
-    def normalize_key
-      self.key = Transcoder.to_db(key) unless key.is_a?(String)
-    end
-
-    def normalize_value
-      self.value = Transcoder.to_db(value) unless value.is_a?(String)
+    # for some reason type doesn't get set for Entry
+    def ensure_type
+      self.type ||= self.class.name
     end
 
     def should_create?(key, opts)
@@ -354,11 +339,7 @@ module Registry
     end
 
     def no_prior_deleted_version?(key)
-      if defined?(NextRails) && NextRails.next?
-        Registry::Entry::Version.where(:parent_id => id, :key => key).first.nil?
-      else
-        Registry::Entry::Version.first(:conditions => {:parent_id => id, :key => key}).nil?
-      end
+      Registry::Entry::Version.where(:parent_id => id, :key => key).none?
     end
 
     def clear_cache
@@ -366,7 +347,8 @@ module Registry
     end
 
     def log_deletion
-      update_attributes(:notes => '*** entry deleted ***')
+      self.notes = '*** entry deleted ***'
+      save
     end
 
   end # class Entry

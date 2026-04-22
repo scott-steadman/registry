@@ -2,11 +2,7 @@ require 'registry/transcoder/base'
 
 Dir["#{File.dirname(__FILE__)}/transcoder/*.rb"].each do |file|
   next if file.to_s =~ /base.rb/
-  if defined?(require_or_load)
-    require_or_load file
-  else
-    require file
-  end
+  require file
 end
 
 require 'ipaddr'

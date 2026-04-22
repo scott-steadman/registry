@@ -1,5 +1,4 @@
 class Registry::RegistryController < ApplicationController
-  unloadable
 
   def index
     # Render the UI in an iframe to prevent conflicts between ExtJS and the hosting app's javascript library.
@@ -11,7 +10,7 @@ class Registry::RegistryController < ApplicationController
   end
 
   def delete_folder
-    unless params[:node].index('xnode')
+    unless params[:node].to_s.index('xnode')
       node = Registry::Folder.find_by_id(params[:node])
       node.destroy if node
     end
@@ -32,7 +31,7 @@ class Registry::RegistryController < ApplicationController
     results = {:success => true, :total => 1, :folders => []}
 
     if request.post?
-      if params[:folder_id].blank? or params[:folder_id].index('xnode')
+      if params[:folder_id].blank? or params[:folder_id].to_s.index('xnode')
         fld = Registry::Folder.create(params[:folder].merge(:parent => parent, :user_id => registry_user_id))
       else
         fld = Registry::Entry.find(params[:folder_id])
@@ -101,11 +100,7 @@ class Registry::RegistryController < ApplicationController
   def revisions
     results = {:success => true, :revisions => []}
 
-    @revisions = if defined?(NextRails) && NextRails.next?
-      Registry::Entry::Version.where('entry_id = ? OR parent_id = ?', params[:id], params[:id]).order('id DESC').all
-    else
-      Registry::Entry::Version.all(:conditions => ['entry_id = ? OR parent_id = ?', params[:id], params[:id]], :order => 'id DESC')
-    end
+    @revisions = Registry::Entry::Version.where(['entry_id = ? OR parent_id = ?', params[:id], params[:id]]).order('id DESC').all
     @revisions.each do |revision|
       results[:revisions] << {
         'id'      => revision.id.to_s,

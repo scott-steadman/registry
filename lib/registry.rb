@@ -114,7 +114,7 @@ module Registry
       Entry::Version.delete_all
     end
 
-    Entry.import!(file, opts)
+    Entry.import!(file, env: opts.fetch(:env, Rails.env), verbose: opts.fetch(:verbose, false))
   end
 
   # :nodoc:
@@ -221,3 +221,4 @@ end # module Registry
 require 'registry/config'
 require 'registry/transcoder'
 require 'registry/wrapper'
+require 'registry/engine' if defined?(Rails::Engine)

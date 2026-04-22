@@ -22,11 +22,17 @@ module Registry
     def permission_check(*args, &blk)
       if block_given?
         silence_warnings do
+          # Ensure method exists before adding filter
+          Registry::RegistryController.send(:define_method, :permission_check) { true } unless Registry::RegistryController.method_defined?(:permission_check)
+          # Add filter only once
+          Registry::RegistryController.before_filter(:permission_check) unless Registry::RegistryController._process_action_callbacks.any? { |c| c.filter == :permission_check }
+          # Now redefine with the actual block
           Registry::RegistryController.send(:define_method, :permission_check, &blk)
-          Registry::RegistryController.before_filter(:permission_check)
         end
       else
-        Registry::RegistryController.filter_chain.delete_if { |ii| :permission_check == ii.method }
+        silence_warnings do
+          Registry::RegistryController.send(:define_method, :permission_check) { true }
+        end
       end
     end
 

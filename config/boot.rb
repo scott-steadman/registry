@@ -36,12 +36,6 @@ module Rails
   class Boot
     def run
       load_initializer
-      # Rails 3.0+ doesn't need Initializer.run(:set_load_path)
-      begin
-        Rails::Initializer.run(:set_load_path)
-      rescue ArgumentError, NoMethodError
-        # Rails 3.0+ - initializer works differently
-      end
     end
   end
 
@@ -61,11 +55,7 @@ module Rails
       # Patch Rails 3.0 gem files for Ruby 2.7+ compatibility before requiring rails
       patch_rails_30_for_ruby_27
 
-      begin
-        require 'initializer'
-      rescue LoadError
-        require 'rails/all'
-      end
+      require 'rails/all'
 
       # Load Ruby 2.7 compatibility patches for Rails 3.0 after rails loads
       rails_30_compat = File.expand_path('../../lib/core_ext/rails_30_ruby_27_compat', __FILE__)
