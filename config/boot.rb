@@ -52,8 +52,8 @@ module Rails
       self.class.load_rubygems
       load_rails_gem
 
-      # Patch Rails 3.0 gem files for Ruby 2.7+ compatibility before requiring rails
-      patch_rails_30_for_ruby_27
+      # Patch Rails 3.0/3.1 gem files for Ruby 2.7+ compatibility before requiring rails
+      patch_rails_for_ruby_27
 
       require 'rails/all'
 
@@ -62,21 +62,37 @@ module Rails
       require rails_30_compat if File.exist?("#{rails_30_compat}.rb")
     end
 
-    def patch_rails_30_for_ruby_27
-      # Find Rails 3.0 activesupport gem
-      if defined?(Gem)
-        gem_spec = Gem.loaded_specs.values.find { |spec| spec.name == 'activesupport' && spec.version.to_s.start_with?('3.0.') }
-        return unless gem_spec
+    def patch_rails_for_ruby_27
+      # Find Rails 3.0 or 3.1 gems and patch for Ruby 2.7+ compatibility
+      return unless defined?(Gem)
 
-        timezone_file = File.join(gem_spec.full_gem_path, 'lib/active_support/values/time_zone.rb')
-        return unless File.exist?(timezone_file)
+      # Patch ActiveSupport TimeZone for Ruby 2.7+ syntax
+      as_gem_spec = Gem.loaded_specs.values.find { |spec|
+        spec.name == 'activesupport' && (spec.version.to_s.start_with?('3.0.') || spec.version.to_s.start_with?('3.1.'))
+      }
+      if as_gem_spec
+        timezone_file = File.join(as_gem_spec.full_gem_path, 'lib/active_support/values/time_zone.rb')
+        if File.exist?(timezone_file)
+          content = File.read(timezone_file)
+          # Fix: def parse(str, now=now) - circular argument reference (syntax error in Ruby 2.7+)
+          if content.include?('def parse(str, now=now)')
+            content.gsub!(/def parse\(str, now=now\)/, "def parse(str, now=nil)\n      now ||= self.now")
+            File.write(timezone_file, content)
+          end
+        end
+      end
 
-        content = File.read(timezone_file)
-
-        # Fix: def parse(str, now=now) - circular argument reference (syntax error in Ruby 2.7+)
-        if content.include?('def parse(str, now=now)')
-          content.gsub!(/def parse\(str, now=now\)/, "def parse(str, now=nil)\n      now ||= self.now")
-          File.write(timezone_file, content)
+      # Patch ActiveRecord sqlite3_adapter to allow newer sqlite3 gem versions (Rails 3.1 only)
+      ar_gem_spec = Gem.loaded_specs.values.find { |spec| spec.name == 'activerecord' && spec.version.to_s.start_with?('3.1.') }
+      if ar_gem_spec
+        sqlite3_adapter_file = File.join(ar_gem_spec.full_gem_path, 'lib/active_record/connection_adapters/sqlite3_adapter.rb')
+        if File.exist?(sqlite3_adapter_file)
+          content = File.read(sqlite3_adapter_file)
+          # Fix: Remove version constraint for sqlite3 gem
+          if content.include?("gem 'sqlite3', '~> 1.3.4'")
+            content.gsub!(/gem 'sqlite3', '~> 1\.3\.4'/, "gem 'sqlite3'")
+            File.write(sqlite3_adapter_file, content)
+          end
         end
       end
     end

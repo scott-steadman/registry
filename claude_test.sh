@@ -20,7 +20,7 @@ bundle config --local without vscode
 export TEST_OPTS="--verbose --no-show-detail-immediately --stop-on-failure"
 
 # In case claude made changes to gems
-rm -rf vendor/bundle
+rm -rf Gemfile.lock Gemfile.next.lock vendor/bundle
 
 # Run tests in order: Rails 3.0 first, then Rails 3.1
 for run in 'current' 'next'
@@ -34,8 +34,8 @@ do
     next bundle _1.17.3_ install
     bx="next bundle _1.17.3_ exec"
   else
-    bundle install
-    bx="bundle exec"
+    bundle _1.17.3_ install
+    bx="bundle _1.17.3_ exec"
   fi
 
   # Undike for rails 6.1+

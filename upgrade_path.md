@@ -1,5 +1,4 @@
 # Versions
-- 3.0 - ruby 1.9.3
 - 3.1 - ruby 1.9.3, adds rails plugin new (creates test/dummy directory)
 - 3.2 - ruby >= 1.9.3, Model.pluck
 - 4.0 - ruby >= 1.9.3, ActiveSupport::Concern, relation lambda syntax, before_action
