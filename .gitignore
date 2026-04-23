@@ -1,4 +1,5 @@
 .bash_history
+.bundle
 db/schema.rb*
 .DS_Store
 .tmp*~
@@ -7,7 +8,7 @@ db/schema.rb*
 *.swp
 Gemfile.lock
 Gemfile.next.lock
-.bundle
+notes.txt
 tmp/
 vendor/bundle
 vendor

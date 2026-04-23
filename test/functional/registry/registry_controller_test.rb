@@ -4,7 +4,7 @@ module Registry
   class RegistryControllerTest < ActionController::TestCase
 
     def setup
-      @routes = Rails.application.routes
+      @routes = Registry::Engine.routes
       Registry::Entry.delete_all # clean slate
       @root = Registry::Entry.root
     end

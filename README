@@ -20,6 +20,12 @@
 
   # view coverage report at: http://localhost:3000/coverage/
 
+=== Manual Testing
+
+  cd test/dummy
+  bundle exec rake db:seed
+  bundle exec rails server -p 8080
+
 === Usage
 
   Configure the plugin

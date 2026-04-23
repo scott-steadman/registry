@@ -3,7 +3,7 @@ var revisionsPanel = new Ext.grid.EditorGridPanel(
     store: new Ext.data.Store({
       restful: true,
       proxy: new Ext.data.HttpProxy({
-         url: '<%= url_for :action => :revisions %>',
+         url: '<%= revisions_path %>',
       }),
       reader: new Ext.data.JsonReader({
         idProperty: 'id',
@@ -73,7 +73,7 @@ var revisionsWindow = new Ext.Window({
 function showRevisions(id) {
   revisionsWindow.show(this);
   revisionsPanel.getStore().load({
-    url:'<%= url_for :action => 'revisions' %>',
+    url:'<%= revisions_path %>',
     params: {id: id}, 
     method:'GET', 
     waitMsg:'Loading...'

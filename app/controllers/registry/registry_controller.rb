@@ -1,4 +1,5 @@
-class Registry::RegistryController < ApplicationController
+module Registry
+  class RegistryController < ApplicationController
 
   def index
     # Render the UI in an iframe to prevent conflicts between ExtJS and the hosting app's javascript library.
@@ -139,4 +140,5 @@ private
     id.to_s
   end
 
-end
+  end # class RegistryController
+end # module Registry

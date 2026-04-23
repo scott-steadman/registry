@@ -2,7 +2,7 @@ var gridDataStore = new Ext.data.Store({
     id: 'properties',
     restful: true,
     proxy: new Ext.data.HttpProxy({
-       url: '<%= url_for :action => 'properties', :node => @root.id%>',
+       url: '<%= properties_path(:node => @root.id) %>',
     }),
     reader: new Ext.data.JsonReader({
         idProperty: 'id',

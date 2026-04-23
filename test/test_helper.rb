@@ -1,4 +1,4 @@
-require 'test/unit'
+#require 'test/unit'
 
 ENV['RAILS_ENV'] = 'test'
 
@@ -29,7 +29,15 @@ class Object
   end
 end
 
-require_relative '../config/environment'
+require File.expand_path("../dummy/config/environment.rb",  __FILE__)
+require "rails/test_help"
+
+Rails.backtrace_cleaner.remove_silencers!
+
+# Load support files
+Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
+
+
 require 'action_controller/test_case'
 
 class ActiveSupport::TestCase

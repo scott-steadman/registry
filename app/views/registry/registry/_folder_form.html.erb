@@ -95,7 +95,7 @@ function addFolder() {
 
   folderWindow.show(this);
   folderFormPanel.getForm().load({
-      url:'<%= url_for :action => 'folder' %>',
+      url:'<%= folder_path %>',
       method:'GET', 
       waitMsg:'Loading...'
   });
@@ -110,7 +110,7 @@ function editFolder() {
   
   folderWindow.show(this);
   folderFormPanel.getForm().load({
-      url:'<%= url_for :action => 'folder' %>',
+      url:'<%= folder_path %>',
       params: {folder_id: lastEditedFolder.attributes.id}, 
       method:'GET', 
       waitMsg:'Loading...'

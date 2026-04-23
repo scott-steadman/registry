@@ -80,7 +80,7 @@ function addProperty(){
   propertyWindow.show(this);
 
   propertyFormPanel.getForm().load({
-    url:'<%= url_for :action => 'property' %>',
+    url:'<%= property_path %>',
     method:'GET', 
     waitMsg:'Loading...'
   });
@@ -91,7 +91,7 @@ function editProperty() {
   
   propertyWindow.show(this);
   propertyFormPanel.getForm().load({
-    url:'<%= url_for :action => 'property' %>',
+    url:'<%= property_path %>',
     params: {prop_id: lastEditedProperty.id}, 
     method:'GET', 
     waitMsg:'Loading...'
@@ -106,7 +106,7 @@ function saveProperty() {
   var prop_id = ((lastEditedProperty!=null) ? lastEditedProperty.id : "");
 
   propertyFormPanel.getForm().submit({
-    url:'<%= url_for :action => 'property' %>',
+    url:'<%= property_path %>',
     params: {prop_id: prop_id, parent_id: node.attributes.id}, 
     method:'POST', 
     waitMsg:'Saving property info...'
