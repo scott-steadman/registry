@@ -19,6 +19,6 @@ if [[ "$*" != *--no-clean* ]]; then
   bundle _1.17.3_ install
 fi
 
-rm -rf test/dummy/db/*.sqlite3 public/coverage
+rm -rf test/dummy/db/test.sqlite3 public/coverage
 RAILS_ENV=test bundle _1.17.3_ exec rake app:db:create app:db:migrate
 RAILS_ENV=test bundle _1.17.3_ exec rake test
