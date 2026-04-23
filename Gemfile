@@ -14,3 +14,11 @@ group :development, :test do
   # Versions after 3.6.2 have a bug that prevents bundle exec bin/test from running
   gem 'test-unit', '3.6.2'
 end
+
+group :vscode do
+# Install these gems locally
+#  gem 'debase',            :require => false
+#  gem 'debug',             :require => false
+#  gem 'ruby-debug-ide',    :require => false
+#  gem 'solargraph-rails',  :require => false
+end
