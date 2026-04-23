@@ -5,7 +5,7 @@
 	// List of extensions which should be recommended for users of this workspace.
 	"recommendations": [
 		"anthropic.claude-code",
-		"castwide.solargraph",
+//		"castwide.solargraph",
 		"eamodio.gitlens",
 		"ecmel.vscode-html-css",
 		"koichisasada.vscode-rdbg",
