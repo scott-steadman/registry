@@ -16,7 +16,7 @@ group :development, :test do
 end
 
 group :vscode do
-# Install these gems locally
+# Install these gems locally: gem install --user-install --no-document <gem_name>
 #  gem 'debase',            :require => false
 #  gem 'debug',             :require => false
 #  gem 'ruby-debug-ide',    :require => false
