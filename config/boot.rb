@@ -60,6 +60,13 @@ module Rails
       # Load Ruby 2.7 compatibility patches for Rails 3.0 after rails loads
       rails_30_compat = File.expand_path('../../lib/core_ext/rails_30_ruby_27_compat', __FILE__)
       require rails_30_compat if File.exist?("#{rails_30_compat}.rb")
+
+      # Load Rails 3.1 Ruby 2.7 compatibility patches after rails loads
+      rails_31_compat = File.expand_path('../../lib/core_ext/rails_31_ruby_27_compat', __FILE__)
+      if File.exist?("#{rails_31_compat}.rb")
+        require rails_31_compat
+        Rails31Ruby27Compat.apply!
+      end
     end
 
     def patch_rails_for_ruby_27
@@ -92,6 +99,35 @@ module Rails
           if content.include?("gem 'sqlite3', '~> 1.3.4'")
             content.gsub!(/gem 'sqlite3', '~> 1\.3\.4'/, "gem 'sqlite3'")
             File.write(sqlite3_adapter_file, content)
+          end
+        end
+
+        # Patch ActiveRecord HasManyAssociation for Ruby 2.7+ (Rails 3.1 only)
+        # This must be done before the file is loaded since it has syntax errors
+        has_many_file = File.join(ar_gem_spec.full_gem_path, 'lib/active_record/associations/has_many_association.rb')
+        if File.exist?(has_many_file)
+          content = File.read(has_many_file)
+          # Fix circular argument references: def method(reflection = reflection)
+          if content.include?('def has_cached_counter?(reflection = reflection)')
+            content.gsub!('def has_cached_counter?(reflection = reflection)',
+                          "def has_cached_counter?(reflection_param = nil)\n          reflection_param ||= reflection")
+            content.gsub!('def cached_counter_attribute_name(reflection = reflection)',
+                          "def cached_counter_attribute_name(reflection_param = nil)\n          reflection_param ||= reflection")
+            content.gsub!('def update_counter(difference, reflection = reflection)',
+                          "def update_counter(difference, reflection_param = nil)\n          reflection_param ||= reflection")
+            content.gsub!('def inverse_updates_counter_cache?(reflection = reflection)',
+                          "def inverse_updates_counter_cache?(reflection_param = nil)\n          reflection_param ||= reflection")
+
+            content.gsub!(/owner\.attribute_present\?\(cached_counter_attribute_name\(reflection\)\)/,
+                          'owner.attribute_present?(cached_counter_attribute_name(reflection_param))')
+            content.gsub!('"\#{reflection.name}_count"', '"\#{reflection_param.name}_count"')
+            content.gsub!(/if has_cached_counter\?\(reflection\)/, 'if has_cached_counter?(reflection_param)')
+            content.gsub!(/counter = cached_counter_attribute_name\(reflection\)/,
+                          'counter = cached_counter_attribute_name(reflection_param)')
+            content.gsub!(/counter_name = cached_counter_attribute_name\(reflection\)/,
+                          'counter_name = cached_counter_attribute_name(reflection_param)')
+            content.gsub!(/reflection\.klass\.reflect_on_all_associations/, 'reflection_param.klass.reflect_on_all_associations')
+            File.write(has_many_file, content)
           end
         end
       end

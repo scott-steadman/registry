@@ -1,17 +1,9 @@
-def next?
-  File.basename(__FILE__) == "Gemfile.next"
-end
 source "http://www.rubygems.org"
 
 gemspec
 
 gem 'next_rails'
-
-if next?
-  gem 'rails', '~> 3.1.0'
-else
-  gem 'rails', '~> 3.0.0'
-end
+gem 'rails', '~> 3.1.0'
 
 group :development, :test do
   gem 'method_source'

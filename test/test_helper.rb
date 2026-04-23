@@ -55,7 +55,7 @@ class ActiveSupport::TestCase
     expected.keys.each do |key|
       if expected[key].is_a?(Hash)
         assert_hash(expected[key], result[key], "#{so_far}#{key}/")
-      elsif expected[key] == '__any__'
+      elsif expected[key].is_a?(String) && expected[key] == '__any__'
         assert result.key?(key), "#{so_far}#{key} expected"
       elsif expected[key].is_a?(Regexp) and not result[key].is_a?(Regexp)
         assert_match expected[key], result[key], "#{so_far}#{key} mismatch"
