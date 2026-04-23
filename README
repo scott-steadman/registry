@@ -22,8 +22,8 @@
 
 === Manual Testing
 
-  cd test/dummy
-  bundle exec rake db:seed
+  rm -f test/dummy/db/*.sqlite3 test/dummy/db/schema.rb
+  bundle exec rake app:db:migrate app:db:seed
   bundle exec rails server -p 8080
 
 === Usage

@@ -13,4 +13,4 @@ template = {
 }
 
 puts "Seeding dummy database with template: #{template.inspect}"
-Entry.root(Rails.env).merge(template)
+Registry::Entry.root(Rails.env).merge(template)
