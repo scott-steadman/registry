@@ -17,6 +17,8 @@ module Versioned
     self.version_condition            = true
     self.non_versioned_columns        = [self.primary_key, inheritance_column, 'version', 'lock_version', versioned_inheritance_column, 'created_at', 'created_on']
 
+    ensure_versioned_model
+
     has_many :versions,
              :class_name  => "#{self.to_s}::Version",
              :foreign_key => versioned_foreign_key,
@@ -41,16 +43,14 @@ module Versioned
 
   # Saves a version of the model in the versioned table.  This is called in the after_save callback by default
   def save_version
-    self.class.ensure_versioned_model
+    return unless defined?(@saving_version) && @saving_version
 
-    if @saving_version
-      @saving_version = nil
-      rev = self.class.versioned_class.new
-      clone_versioned_model(self, rev)
-      rev.version = version
-      rev.send("#{self.class.versioned_foreign_key}=", id)
-      rev.save!
-    end
+    @saving_version = nil
+    rev = self.class.versioned_class.new
+    clone_versioned_model(self, rev)
+    rev.version = version
+    rev.send("#{self.class.versioned_foreign_key}=", id)
+    rev.save!
   end
 
   # Clears old revisions if a limit is set with the :limit option in <tt>acts_as_versioned</tt>.

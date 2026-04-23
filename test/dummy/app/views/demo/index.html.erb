@@ -1,5 +1,14 @@
 <h1>Registry Engine Demo</h1>
 
-<p>This is a demo application for the Registry engine.</p>
-
 <p><%= link_to "Go to Registry", registry_path %></p>
+
+<h2>Registry Values</h2>
+<table border=1>
+  <tr><th>key</th><th>value</th></tr>
+  <% Registry::Entry.root.export.each do |key, value| %>
+    <tr>
+      <td><%= key %></td>
+      <td><%= value %></td>
+    </tr>
+  <% end %>
+</table>

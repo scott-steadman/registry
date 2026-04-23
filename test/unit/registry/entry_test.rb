@@ -65,6 +65,10 @@ module Registry
       assert_hash expected, Entry.export!(nil)
     end
 
+    test 'Entry.version reflection' do
+      assert Entry.reflect_on_association(:versions).klass
+    end
+
     test 'versioning' do
       prop = Entry.root.create_property(:key => 'one', :value => 'one')
 

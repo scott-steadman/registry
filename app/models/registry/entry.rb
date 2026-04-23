@@ -24,10 +24,7 @@
 module Registry
   class Entry < ApplicationRecord
 
-    self.table_name = 'registry_entries'
-
     include Versioned
-    self.versioned_table_name = 'registry_entry_versions'
 
     belongs_to :parent,                          :class_name => 'Entry', :foreign_key => 'parent_id'
     has_many   :children, :class_name => 'Entry', :foreign_key => 'parent_id', :dependent => :destroy, :order => 'key asc'
@@ -339,7 +336,7 @@ module Registry
     end
 
     def no_prior_deleted_version?(key)
-      Registry::Entry::Version.where(:parent_id => id, :key => key).none?
+      Version.where(:parent_id => id, :key => key).none?
     end
 
     def clear_cache

@@ -6,13 +6,13 @@ module Registry
   end
 
   def viewport
-    @root = Registry::Entry.root
+    @root = Entry.root
     render :layout => false
   end
 
   def delete_folder
     unless params[:node].to_s.index('xnode')
-      node = Registry::Folder.find_by_id(params[:node])
+      node = Folder.find_by_id(params[:node])
       node.destroy if node
     end
     render :text => 'done'
@@ -20,8 +20,8 @@ module Registry
 
   def folders
     folders = []
-    node = Registry::Entry.root if params[:node] == Registry::Entry::ROOT_ACCESS_KEY
-    node = Registry::Entry.find_by_id(params[:node]) unless node
+    node = Entry.root if params[:node] == Entry::ROOT_ACCESS_KEY
+    node = Entry.find_by_id(params[:node]) unless node
     node.folders.each do |child|
       folders << child.to_folder_hash
     end
@@ -33,14 +33,14 @@ module Registry
 
     if request.post?
       if params[:folder_id].blank? or params[:folder_id].to_s.index('xnode')
-        fld = Registry::Folder.create(params[:folder].merge(:parent => parent, :user_id => registry_user_id))
+        fld = Folder.create(params[:folder].merge(:parent => parent, :user_id => registry_user_id))
       else
-        fld = Registry::Entry.find(params[:folder_id])
+        fld = Entry.find(params[:folder_id])
         fld.update_attributes(params[:folder].merge(:user_id => registry_user_id))
       end
     else
-      fld = Registry::Entry.find_by_id(params[:folder_id]) unless params[:folder_id].blank?
-      fld = Registry::Entry.new unless fld
+      fld = Entry.find_by_id(params[:folder_id]) unless params[:folder_id].blank?
+      fld = Entry.new unless fld
     end
 
     results[:folders] << fld.to_folder_hash
@@ -52,9 +52,9 @@ module Registry
 
     if request.post?
       if params[:prop_id].blank?
-        prop = Registry::Entry.create(params[:property].merge(:parent => parent, :user_id => registry_user_id))
+        prop = Entry.create(params[:property].merge(:parent => parent, :user_id => registry_user_id))
       else
-        prop = Registry::Entry.find_by_id(params[:prop_id]) || Registry::Entry.new(:parent => parent)
+        prop = Entry.find_by_id(params[:prop_id]) || Entry.new(:parent => parent)
         prop.update_attributes(:key          => params[:property][:key],
                                :label        => params[:property][:label],
                                :description  => params[:property][:description],
@@ -63,8 +63,8 @@ module Registry
                               )
       end
     else
-      prop = Registry::Entry.find_by_id(params[:prop_id]) unless params[:prop_id].blank?
-      prop = Registry::Entry.new unless prop
+      prop = Entry.find_by_id(params[:prop_id]) unless params[:prop_id].blank?
+      prop = Entry.new unless prop
     end
 
     results[:properties] << prop.to_form_property_hash if prop
@@ -75,21 +75,21 @@ module Registry
     results = {:success => true, :total => 0, :properties => []}
 
     if request.get?
-      node = Registry::Entry.find_by_id(params[:node]) unless (params[:node] and params[:node] == 'root')
-      node = Registry::Entry.root unless node
+      node = Entry.find_by_id(params[:node]) unless (params[:node] and params[:node] == 'root')
+      node = Entry.root unless node
       node.properties.each do |item|
         results[:properties] << item.to_grid_property_hash
       end
       results[:total] = node.children.size
 
     elsif request.put?
-      item = Registry::Entry.find_by_id(params[:properties][:id])
+      item = Entry.find_by_id(params[:properties][:id])
       item.update_attributes("value" => params[:properties][:value], :user_id => registry_user_id)
       results[:properties] << item.to_grid_property_hash
       results[:total] = 1
 
     elsif request.delete?
-      if node = Registry::Entry.find_by_id(params[:properties]) 
+      if node = Entry.find_by_id(params[:properties])
         node.update_attributes(:user_id => registry_user_id)
         node.destroy
       end
@@ -101,7 +101,7 @@ module Registry
   def revisions
     results = {:success => true, :revisions => []}
 
-    @revisions = Registry::Entry::Version.where(['entry_id = ? OR parent_id = ?', params[:id], params[:id]]).order('id DESC').all
+    @revisions = Entry::Version.where(['entry_id = ? OR parent_id = ?', params[:id], params[:id]]).order('id DESC').all
     @revisions.each do |revision|
       results[:revisions] << {
         'id'      => revision.id.to_s,
@@ -117,19 +117,19 @@ module Registry
   end
 
   def export
-    Registry::Entry.export!('/tmp/registry.yml')
+    Entry.export!('/tmp/registry.yml')
     send_file('/tmp/registry.yml', :type=>'text/yml', :filename => 'registry.yml')
   end
 
   def import
-    Registry::Entry.import!("#{Rails.root}/config/registry.yml")
+    Entry.import!("#{Rails.root}/config/registry.yml")
     redirect_to :action => :viewport
   end
 
 private
 
   def parent
-    @parent ||= Registry::Entry.find_by_id(params[:parent_id]) || Registry::Entry.root
+    @parent ||= Entry.find_by_id(params[:parent_id]) || Entry.root
   end
 
   def registry_user_id
