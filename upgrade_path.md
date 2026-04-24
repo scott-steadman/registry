@@ -1,6 +1,4 @@
 # Versions
-- 3.1 - ruby >= 1.9.3 ✅
-- 3.2 - ruby >= 1.9.3, Model.pluck ✅
 - 4.0 - ruby >= 1.9.3, relation lambda syntax, before_action
 - 4.1 - ruby >= 2.2.2
 - 4.2 - ruby >= 2.2.2
