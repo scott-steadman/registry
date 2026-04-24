@@ -9,6 +9,9 @@
 set -e
 set -o pipefail
 
+# Add next_rails gem bin to PATH
+export PATH="$HOME/.gem/ruby/2.7.0/bin:$PATH"
+
 bundle config --local build.sqlite3 "--enable-system-libraries"
 bundle config --local clean false
 bundle config --local path vendor/bundle
@@ -41,7 +44,7 @@ do
   # Undike for rails 6.1+
   #$bx rails zeitwerk:check
 
-  rm -f db/*.sqlite3
+  rm -f test/dummy/db/*.sqlite3
   RAILS_ENV=test $bx rake db:create db:migrate
   RAILS_ENV=test $bx rake test
 done

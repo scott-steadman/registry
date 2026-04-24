@@ -46,7 +46,13 @@ module Registry
     # call-seq:
     #   Registry::Entry.environments #=> ['development', 'test', 'qa', 'stage', 'production']
     def self.environments
-      where('parent_id IS NULL').all.map(&:env).uniq.compact
+      relation = where('parent_id IS NULL')
+      # Use pluck in Rails 3.2+, otherwise fall back to map
+      if relation.respond_to?(:pluck)
+        relation.pluck(:env).uniq.compact
+      else
+        relation.all.map(&:env).uniq.compact
+      end
     end
 
     # Export the registry to a YAML file and return the hash.
