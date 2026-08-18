@@ -1,6 +1,4 @@
-require_relative '../application_controller'
-
-class Registry::RegistryController < ApplicationController
+class Registry::RegistryController < ::ApplicationController
 
   def index
     # Render the UI in an iframe to prevent conflicts between ExtJS and the hosting app's javascript library.

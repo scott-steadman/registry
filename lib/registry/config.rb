@@ -1,6 +1,4 @@
 
-require_relative '../../app/controllers/registry/registry_controller'
-
 module Registry
   class Config
 
