@@ -14,5 +14,7 @@ rm Gemfile.lock
 bundle install
 
 rm -f db/*.sqlite3 public/coverage
-bundle exec rake db:create db:migrate
-bundle exec rake db:test:prepare test
+bundle exec rails db:create db:migrate
+bundle exec rails db:test:prepare
+bundle exec rails test
+
