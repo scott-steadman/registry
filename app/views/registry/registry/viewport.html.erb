@@ -10,10 +10,18 @@
 </head>
 
 <body>
+  <% authenticity_params = protect_against_forgery? ? "{'#{request_forgery_protection_token}': '#{escape_javascript(form_authenticity_token)}'}" : '{}' -%>
   <%= javascript_tag %{
 
     Ext.onReady(function(){
         Ext.QuickTips.init();
+
+        // ExtJS builds its own requests, so Rails never gets a chance to add the CSRF
+        // token to them.  Pass it along on everything -- Rails rejects any non-GET
+        // request (the tree loader, the property grid writes, the form submits) that
+        // arrives without it.
+        Ext.Ajax.extraParams = Ext.apply(Ext.Ajax.extraParams || {}, #{authenticity_params});
+
         #{render :partial => "grid"}
         #{render :partial => "tree"}
         #{render :partial => "info_panel"}
