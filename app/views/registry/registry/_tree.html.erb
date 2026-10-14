@@ -18,8 +18,9 @@ var treeToolbar = new Ext.Toolbar({
             if (!lastEditedNode)
               return false;
               
-            var conn = new Ext.data.Connection();
-            conn.request({
+            // Ext.Ajax carries the CSRF token (see viewport.html.erb); a connection
+            // of our own would not.
+            Ext.Ajax.request({
                 url: '<%= url_for :action => 'delete_folder' %>',
                 method: 'POST',
                 params: { "node": lastEditedNode.attributes.id},
