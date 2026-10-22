@@ -11,7 +11,6 @@ Gem::Specification.new do |gem|
   gem.homepage      = "https://github.com/scott-steadman/registry"
   gem.license       = 'MIT'
 
-  gem.add_dependency 'iconv'
   gem.add_dependency 'rails', '~> 2.3.0'
 
   gem.files         = `git ls-files`.split($/)
