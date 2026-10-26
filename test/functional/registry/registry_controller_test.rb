@@ -11,7 +11,10 @@ module Registry
     test 'index' do
       get :index
       assert_response :success
-      assert_select 'iframe[src=/registry/viewport]'
+      # The src is assigned in javascript so the URI fragment (the folder to
+      # open) can be passed along on the iframe's first load.
+      assert_select 'iframe#registry_viewport'
+      assert_match %r{base\s*=\s*'/registry/viewport'}, @response.body
     end
 
     test 'viewport' do
