@@ -85,6 +85,19 @@ end
 
 ```
 
+## Linking to a folder
+
+The URI fragment names the folder to open, by key, relative to the root:
+
+```
+/registry#email            # opens the 'email' folder
+/registry#email/settings   # opens 'email', then selects its 'settings' subfolder
+/registry#email%2Fsettings # same, for anchors that may not contain a slash
+```
+
+Folders are opened as far down the path as they exist; a key that isn't there
+leaves the last folder that was found open and selected.
+
 ## Initital import
 
 ```sh
