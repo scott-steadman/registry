@@ -1,1 +1,28 @@
-<iframe src='<%= viewport_path %>' style='width:100%; height:580px; border:0px;'></iframe>
+<%# The src is set from javascript below so that the fragment is part of the first load. -%>
+<iframe id='registry_viewport' style='width:100%; height:580px; border:0px;'></iframe>
+<%= javascript_tag %{
+
+  // A URI fragment never reaches the server, and the UI itself lives in the
+  // iframe, so hand the folder path from /registry#email/settings down to the
+  // viewport document as its own fragment.  Changing the fragment later is a
+  // same-document navigation for the iframe, so the tree picks it up (see
+  // _tree.html.erb) without reloading ExtJS.
+  (function() {
+    var frame = document.getElementById('registry_viewport'),
+        base  = '#{viewport_path}';
+
+    function syncViewport() {
+      var src = base + window.location.hash;
+      if (frame.getAttribute('src') != src)
+        frame.setAttribute('src', src);
+    }
+
+    syncViewport();
+
+    if (window.addEventListener)
+      window.addEventListener('hashchange', syncViewport, false);
+    else if (window.attachEvent)
+      window.attachEvent('onhashchange', syncViewport);
+  })();
+
+} %>

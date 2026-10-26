@@ -103,6 +103,69 @@ var tree = new Ext.tree.TreePanel({
 
 tree.getRootNode().expand();
 
+// Return the folder keys named by the URI fragment, e.g. '#email/settings' =>
+// ['email', 'settings'].  '%2F' separates just like '/' does, for the sake of
+// anchors that may not contain a slash.
+function folderPathFromHash() {
+  var parts = (window.location.hash || '').replace(/^#/, '').split(/%2[fF]|\//),
+      path  = [],
+      ii, key;
+
+  for (ii = 0; ii < parts.length; ii++) {
+    try {
+      key = decodeURIComponent(parts[ii]);
+    } catch (e) {
+      key = parts[ii]; // malformed escape -- take the segment as typed
+    }
+    if (key.length > 0)
+      path.push(key);
+  }
+
+  return path;
+}
+
+// Walk down the given folder keys, expanding each one, and select the deepest
+// folder we reach.  A key that does not exist simply ends the walk, leaving the
+// last folder that did exist open and selected.
+function openFolderPath(path) {
+  var node  = tree.getRootNode(),
+      index = 0;
+
+  if (path.length == 0)
+    return;
+
+  var step = function() {
+    var child = (index < path.length) ? node.findChild('key', path[index]) : null;
+
+    if (!child) {
+      selectFolder(node);
+      return;
+    }
+
+    node = child;
+    index++;
+    node.expand(false, false, step);
+  };
+
+  node.expand(false, false, step);
+}
+
+// Wait for the tree to be on the page: selecting a node means rendering it.
+tree.on('afterrender', function() {
+  openFolderPath(folderPathFromHash());
+});
+
+// The hosting page copies its fragment onto ours (see index.html.erb), so a new
+// /registry#email/settings link opens that folder without a reload.
+if (window.addEventListener)
+  window.addEventListener('hashchange', function() {
+    openFolderPath(folderPathFromHash());
+  }, false);
+else if (window.attachEvent)
+  window.attachEvent('onhashchange', function() {
+    openFolderPath(folderPathFromHash());
+  });
+
 function selectFolder(node) {
   if (node == null)
     return;
