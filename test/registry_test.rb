@@ -101,6 +101,29 @@ class RegistryTest < Registry::TestCase
     assert_hash expected, Registry.to_hash
   end
 
+  test 'import with a merge alias' do
+    File.write('/tmp/foo.yml', <<-YAML)
+test:
+  api: &api
+    enabled: true
+  admin_api:
+    <<: *api
+    YAML
+
+    # 5 comes from test, test/api, test/api/enabled, test/admin_api, test/admin_api/enabled
+    assert_difference 'Registry::Entry.count', 5 do
+      Registry.import('/tmp/foo.yml')
+    end
+
+    assert_equal true, Registry.admin_api.enabled?
+
+    assert_no_difference 'Registry::Entry.count' do
+      Registry.import('/tmp/foo.yml', testing: true)
+    end
+
+    assert_equal true, Registry.admin_api.enabled?
+  end
+
   test 'import with purge' do
     File.open('/tmp/foo.yml', 'w+') do |file|
       reg = {

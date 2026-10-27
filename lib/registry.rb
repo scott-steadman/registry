@@ -102,7 +102,9 @@ module Registry
   #
   def self.import(file, env: Rails.env, testing: false, purge: false, verbose: false)
     if testing
-      hash = YAML.load_file(file)
+      # aliases: true because the file is the application's own config, not untrusted input --
+      # Psych 4 made load_file a safe load, and a safe load rejects a `<<: *anchor` merge key.
+      hash = YAML.load_file(file, aliases: true)
       hash = hash.fetch(DEFAULTS_KEY, {}).deep_merge(hash.fetch(env.to_s, {}))
       return @registry = Wrapper.new(hash, save: false)
     end
