@@ -21,7 +21,7 @@ var treeToolbar = new Ext.Toolbar({
             // Ext.Ajax carries the CSRF token (see viewport.html.erb); a connection
             // of our own would not.
             Ext.Ajax.request({
-                url: '<%= url_for :action => 'delete_folder' %>',
+                url: '<%= url_for action: 'delete_folder' %>',
                 method: 'POST',
                 params: { "node": lastEditedNode.attributes.id},
                 success: function(responseObject) {
@@ -49,12 +49,12 @@ var treeToolbar = new Ext.Toolbar({
     }, '->', {
         text: 'Import',
         handler: function() {
-          location = "<%= url_for :action => 'import' %>";
+          location = "<%= url_for action: 'import' %>";
         }
     }, '-', {
         text: 'Export',
         handler: function() {
-          location = "<%= url_for :action => 'export' %>";
+          location = "<%= url_for action: 'export' %>";
         }
     }, '-', {
         text: 'Reload',
@@ -69,7 +69,7 @@ var tree = new Ext.tree.TreePanel({
      enableDD:false,
      containerScroll: true,
      rootVisible:true,
-     dataUrl: '<%= url_for :action => 'folders' %>',
+     dataUrl: '<%= url_for action: 'folders' %>',
      root: {
         nodeType: 'async',
         text: '<%=@root.label%>',
@@ -173,7 +173,7 @@ function selectFolder(node) {
   node.select();
   // node.expand();  
   
-  gridDataStore.proxy.setUrl('<%= url_for :action => 'properties' %>?node=' + node.attributes.id, true);
+  gridDataStore.proxy.setUrl('<%= url_for action: 'properties' %>?node=' + node.attributes.id, true);
   gridDataStore.reload();
   gridToolbar.items.get("edit_property_button").disable();
   gridToolbar.items.get("delete_property_button").disable();

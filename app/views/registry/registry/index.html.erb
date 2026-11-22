@@ -9,7 +9,7 @@
   // _tree.html.erb) without reloading ExtJS.
   (function() {
     var frame = document.getElementById('registry_viewport'),
-        base  = '#{url_for :action => 'viewport'}';
+        base  = '#{url_for action: 'viewport'}';
 
     function syncViewport() {
       var src = base + window.location.hash;

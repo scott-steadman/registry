@@ -35,8 +35,8 @@ module Registry
     # and building it any earlier would point Registry::Entry::Version at the default table name.
     ensure_versioned_model
 
-    belongs_to :parent,                          :class_name => 'Entry', :foreign_key => 'parent_id', :required => false
-    has_many   :children, -> {order('key asc')}, :class_name => 'Entry', :foreign_key => 'parent_id', :dependent => :destroy
+    belongs_to :parent,                          class_name: 'Entry', foreign_key: 'parent_id', required: false
+    has_many   :children, -> {order('key asc')}, class_name: 'Entry', foreign_key: 'parent_id', dependent: :destroy
 
     before_save :ensure_env
     before_save :ensure_type
@@ -130,14 +130,14 @@ module Registry
     # ==== Parameters
     #
     # * +env+ - Optional environment (defaults to Rails.env)
-    # * +opts+ - Optional options (defaults to {:auto_create => true})
+    # * +opts+ - Optional options (defaults to {auto_create: true})
     #
     # call-seq:
     #   Registry::Entry.root
     def self.root(env=Rails.env)
       ret = where(['parent_id IS NULL AND env = ?', env]).order(:id).first
       return ret unless Registry.configuration.auto_create_root
-      ret || Folder.create!(:env => env, :key => ROOT_ACCESS_KEY, :label => ROOT_LABEL)
+      ret || Folder.create!(env: env, key: ROOT_ACCESS_KEY, label: ROOT_LABEL)
     end
 
     def key=(new_key)
@@ -165,7 +165,7 @@ module Registry
     #   Registry::Entry.root.child('/api/enabled')
     def child(path)
       path.split('/').reject{|ii| ii.blank?}.inject(self) do |parent, key|
-        parent.children.find_by(:key => key).tap {|ii| raise ArgumentError.new("#{parent.key} has no child named #{key}") if ii.nil?}
+        parent.children.find_by(key: key).tap {|ii| raise ArgumentError.new("#{parent.key} has no child named #{key}") if ii.nil?}
       end
     end
 
@@ -181,9 +181,9 @@ module Registry
     # * +hash+ - Hash of field names and values
     #
     # call-seq:
-    #   Registry.entry.root.child('/api').create_property(:key => 'enabled', :value => true)
+    #   Registry.entry.root.child('/api').create_property(key: 'enabled', value: true)
     def create_property(hash)
-      Entry.create!(hash.merge(:parent => self))
+      Entry.create!(hash.merge(parent: self))
     end
 
     # Return a list of child properties.
@@ -201,9 +201,9 @@ module Registry
     # * +hash+ - Hash of field names and values
     #
     # call-seq:
-    #   Registry::Entry.root.create_folder(:key => 'api' :label => 'API', :description => 'API Settings')
+    #   Registry::Entry.root.create_folder(key: 'api', label: 'API', description: 'API Settings')
     def create_folder(hash)
-      Folder.create!(hash.merge(:parent => self))
+      Folder.create!(hash.merge(parent: self))
     end
 
     # Return a list of child folders.
@@ -293,7 +293,7 @@ module Registry
     #
     # call-seq:
     #   Registry::Entry.root.merge({'api' => {'enabled' => true}})
-    #   Registry::Entry.root.merge({'api' => {'enabled' => true}}, :skip_already_deleted => true)
+    #   Registry::Entry.root.merge({'api' => {'enabled' => true}}, skip_already_deleted: true)
     def merge(hash, opts={})
       hash.each do |key, value|
         key = Transcoder.to_db(key)
@@ -301,12 +301,12 @@ module Registry
         if value.is_a?(Hash)
           if reg.nil? && should_create?(key, opts)
             puts "Creating folder: #{access_code}.#{key}" if opts[:verbose] # Issue 2
-            reg = create_folder(:key => key)
+            reg = create_folder(key: key)
           end
           reg.merge(value, opts) unless reg.nil?
         elsif reg.nil? && should_create?(key, opts)
           puts "Creating property: #{access_code}.#{key} = #{value.inspect}" if opts[:verbose] # Issue 2
-          create_property(:key => key, :value => value)
+          create_property(key: key, value: value)
         else
           # don't overwrite
           puts "Skipping existing property: #{access_code}.#{key}" if opts[:verbose] # Issue 2
@@ -346,7 +346,7 @@ module Registry
     end
 
     def no_prior_deleted_version?(key)
-      Registry::Entry::Version.where(:parent_id => id, :key => key).none?
+      Registry::Entry::Version.where(parent_id: id, key: key).none?
     end
 
     def clear_cache
@@ -354,7 +354,7 @@ module Registry
     end
 
     def log_deletion
-      update(:notes => '*** entry deleted ***')
+      update(notes: '*** entry deleted ***')
     end
 
   end # class Entry

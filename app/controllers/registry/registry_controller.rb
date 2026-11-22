@@ -13,7 +13,7 @@ class Registry::RegistryController < ::ApplicationController
 
   def viewport
     @root = Registry::Entry.root
-    render :layout => false
+    render layout: false
   end
 
   def delete_folder
@@ -21,7 +21,7 @@ class Registry::RegistryController < ::ApplicationController
       node = Registry::Folder.find_by_id(params[:node])
       node.destroy if node
     end
-    render :plain => 'done'
+    render plain: 'done'
   end
 
   def folders
@@ -31,18 +31,18 @@ class Registry::RegistryController < ::ApplicationController
     node.folders.each do |child|
       folders << child.to_folder_hash
     end
-    render :json => folders
+    render json: folders
   end
 
   def folder
-    results = {:success => true, :total => 1, :folders => []}
+    results = {success: true, total: 1, folders: []}
 
     if request.post?
       if params[:folder_id].blank? or params[:folder_id].index('xnode')
-        fld = Registry::Folder.create(folder_params.merge(:parent => parent, :user_id => registry_user_id))
+        fld = Registry::Folder.create(folder_params.merge(parent: parent, user_id: registry_user_id))
       else
         fld = Registry::Entry.find(params[:folder_id])
-        fld.update(folder_params.merge(:user_id => registry_user_id))
+        fld.update(folder_params.merge(user_id: registry_user_id))
       end
     else
       fld = Registry::Entry.find_by_id(params[:folder_id]) unless params[:folder_id].blank?
@@ -50,22 +50,22 @@ class Registry::RegistryController < ::ApplicationController
     end
 
     results[:folders] << fld.to_folder_hash
-    render :json => results
+    render json: results
   end
 
   def property
-    results = {:success => true, :total => 1, :properties => []}
+    results = {success: true, total: 1, properties: []}
 
     if request.post?
       if params[:prop_id].blank?
-        prop = Registry::Entry.create(property_params.merge(:parent => parent, :user_id => registry_user_id))
+        prop = Registry::Entry.create(property_params.merge(parent: parent, user_id: registry_user_id))
       else
-        prop = Registry::Entry.find_by_id(params[:prop_id]) || Registry::Entry.new(:parent => parent)
-        prop.update(:key          => params[:property][:key],
-                    :label        => params[:property][:label],
-                    :description  => params[:property][:description],
-                    :value        => params[:property][:value],
-                    :user_id      => registry_user_id
+        prop = Registry::Entry.find_by_id(params[:prop_id]) || Registry::Entry.new(parent: parent)
+        prop.update(key:         params[:property][:key],
+                    label:       params[:property][:label],
+                    description: params[:property][:description],
+                    value:       params[:property][:value],
+                    user_id:     registry_user_id
                     )
       end
     else
@@ -74,11 +74,11 @@ class Registry::RegistryController < ::ApplicationController
     end
 
     results[:properties] << prop.to_form_property_hash if prop
-    render :json => results
+    render json: results
   end
 
   def properties
-    results = {:success => true, :total => 0, :properties => []}
+    results = {success: true, total: 0, properties: []}
 
     if request.get?
       node = Registry::Entry.find_by_id(params[:node]) unless (params[:node] and params[:node] == 'root')
@@ -90,22 +90,22 @@ class Registry::RegistryController < ::ApplicationController
 
     elsif request.put?
       item = Registry::Entry.find_by_id(params[:properties][:id])
-      item.update("value" => params[:properties][:value], :user_id => registry_user_id)
+      item.update("value" => params[:properties][:value], user_id: registry_user_id)
       results[:properties] << item.to_grid_property_hash
       results[:total] = 1
 
     elsif request.delete?
       if node = Registry::Entry.find_by_id(params[:properties])
-        node.update(:user_id => registry_user_id)
+        node.update(user_id: registry_user_id)
         node.destroy
       end
     end
 
-    render :json => results
+    render json: results
   end
 
   def revisions
-    results = {:success => true, :revisions => []}
+    results = {success: true, revisions: []}
 
     @revisions = Registry::Entry::Version.where(['entry_id = ? OR parent_id = ?', params[:id], params[:id]]).order('id DESC')
     @revisions.each do |revision|
@@ -119,17 +119,17 @@ class Registry::RegistryController < ::ApplicationController
       }
     end
 
-    render :json => results
+    render json: results
   end
 
   def export
     Registry::Entry.export!('/tmp/registry.yml')
-    send_file('/tmp/registry.yml', :type=>'text/yml', :filename => 'registry.yml')
+    send_file('/tmp/registry.yml', type: 'text/yml', filename: 'registry.yml')
   end
 
   def import
     Registry::Entry.import!("#{Rails.root}/config/registry.yml")
-    redirect_to :action => :viewport
+    redirect_to action: :viewport
   end
 
 private

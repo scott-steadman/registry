@@ -12,7 +12,7 @@ module Registry
       load Registry::Engine.root.join('lib/tasks/registry_tasks.rake')
 
       @root = Entry.root
-      @root.create_folder(:key => 'api').create_property(:key => 'enabled', :value => 'false')
+      @root.create_folder(key: 'api').create_property(key: 'enabled', value: 'false')
     end
 
     def teardown
@@ -30,7 +30,7 @@ module Registry
     end
 
     test 'registry:set several values at once' do
-      @root.create_property(:key => 'top', :value => 'old')
+      @root.create_property(key: 'top', value: 'old')
       ARGV.replace(['registry:set', 'api.enabled=true', 'top=new'])
 
       Rake::Task['registry:set'].invoke

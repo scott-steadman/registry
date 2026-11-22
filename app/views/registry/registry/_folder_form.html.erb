@@ -95,7 +95,7 @@ function addFolder() {
 
   folderWindow.show(this);
   folderFormPanel.getForm().load({
-      url:'<%= url_for :action => 'folder' %>',
+      url:'<%= url_for action: 'folder' %>',
       method:'GET', 
       waitMsg:'Loading...'
   });
@@ -110,7 +110,7 @@ function editFolder() {
   
   folderWindow.show(this);
   folderFormPanel.getForm().load({
-      url:'<%= url_for :action => 'folder' %>',
+      url:'<%= url_for action: 'folder' %>',
       params: {folder_id: lastEditedFolder.attributes.id}, 
       method:'GET', 
       waitMsg:'Loading...'
@@ -122,7 +122,7 @@ function saveFolder() {
   tempFolder = null;
   
   folderFormPanel.getForm().submit({
-    url:'<%= url_for :action => 'folder' %>',
+    url:'<%= url_for action: 'folder' %>',
     params: {folder_id: lastEditedFolder.attributes.id, parent_id: parent.attributes.id}, 
     method:'POST', 
     waitMsg:'Saving folder info...'

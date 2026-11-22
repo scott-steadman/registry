@@ -12,15 +12,15 @@ module Registry
 
     test 'notify_create_listeners' do
       DummyListener.folder = nil
-      parent = Registry::Folder.create!(:env => 'test', :key => 'Registry::FolderTest::DummyListener')
-      folder = Registry::Folder.create!(:env => 'test', :key => 'child_folder', :parent => parent)
+      parent = Registry::Folder.create!(env: 'test', key: 'Registry::FolderTest::DummyListener')
+      folder = Registry::Folder.create!(env: 'test', key: 'child_folder', parent: parent)
 
       assert_equal folder, DummyListener.folder
     end
 
     test 'populate_from_parent_template' do
       expected = {'name' => 'example name', 'host' => 'example host'}
-      parent   = Folder.create!(:env => 'test', :key => 'root')
+      parent   = Folder.create!(env: 'test', key: 'root')
       parent.merge('template_test' => {'_template' => expected})
 
       parent.child('template_test').merge('test' => {})

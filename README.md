@@ -9,7 +9,7 @@ Add the following lines to the specified files:
 
 ```ruby
 # Gemfile
-gem 'registry', :git => 'https://github.com/scott-steadman/registry.git', :branch => 'rails-8'
+gem 'registry', git: 'https://github.com/scott-steadman/registry.git', branch: 'rails-8'
 
 # config/routes.rb
 Rails.application.routes.draw do
@@ -53,7 +53,7 @@ private
       raise ForbiddenError.new('Rate limit exceeded.')
     else
       # Under the limit.
-      Rails.cache.write(cache_key, (requests+1).to_s, :expires_in => Registry.api.request_window)
+      Rails.cache.write(cache_key, (requests+1).to_s, expires_in: Registry.api.request_window)
     end
   end
 
@@ -79,8 +79,8 @@ production:
 
 # lib/tasks/my_tasks.rake
 desc 'Import configuration'
-task :import_configuration => [:environment] do
-  Registry.import("#{Rails.root}/config/registry.yml", :verbose => !Rails.env.test?)
+task import_configuration: [:environment] do
+  Registry.import("#{Rails.root}/config/registry.yml", verbose: !Rails.env.test?)
 end
 
 ```

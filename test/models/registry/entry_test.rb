@@ -35,9 +35,9 @@ module Registry
 
     test 'import does not overwrite' do
       root = Entry.root('dev')
-      root.create_property(:key => 'one', :value => 'preserve')
-      two = root.create_folder(:key => 'two')
-      two.create_property(:key => 'one', :value => 'preserve')
+      root.create_property(key: 'one', value: 'preserve')
+      two = root.create_folder(key: 'two')
+      two.create_property(key: 'one', value: 'preserve')
 
       data = {
         'dev' => {
@@ -51,7 +51,7 @@ module Registry
       end
 
       # Issue 2
-      Entry.import!(CONFIG, :env => 'dev', :verbose => true)
+      Entry.import!(CONFIG, env: 'dev', verbose: true)
 
       expected = {
         'dev' => {
@@ -65,16 +65,16 @@ module Registry
     end
 
     test 'versioning' do
-      prop = Entry.root.create_property(:key => 'one', :value => 'one')
+      prop = Entry.root.create_property(key: 'one', value: 'one')
 
       assert_difference 'Registry::Entry::Version.count', 1 do
-        prop.update(:value => 'two')
+        prop.update(value: 'two')
       end
 
       prop.revert_to!(1)
       assert_equal 'one', prop.reload.value, 'Reversion failed'
 
-      prop.update(:value => 'three')
+      prop.update(value: 'three')
       assert_equal 3, prop.reload.version
     end
 
@@ -113,7 +113,7 @@ module Registry
     end
 
     test 'deletes are versioned' do
-      prop = Entry.root.create_property(:key => 'one', :value => 'one')
+      prop = Entry.root.create_property(key: 'one', value: 'one')
 
       assert_difference 'Registry::Entry::Version.count', 1 do
         assert_difference 'Registry::Entry.count', -1 do
@@ -126,41 +126,41 @@ module Registry
     end
 
     test 'skip_already_deleted prevents property creation if deleted' do
-      Entry.root.create_property(:key => 'one', :value => 'one').destroy
+      Entry.root.create_property(key: 'one', value: 'one').destroy
 
-      folder = Entry.root.create_folder(:key => 'folder')
-      folder.create_property(:key => 'two', :value => 'two').destroy
+      folder = Entry.root.create_folder(key: 'folder')
+      folder.create_property(key: 'two', value: 'two').destroy
 
       assert_no_difference 'Registry::Entry.count' do
-        Entry.root.merge({'one' => 'two'}, :skip_already_deleted => true)
-        folder.merge({'two' => 'three'}, :skip_already_deleted => true)
+        Entry.root.merge({'one' => 'two'}, skip_already_deleted: true)
+        folder.merge({'two' => 'three'}, skip_already_deleted: true)
       end
     end
 
     test 'skip_already_deleted prevents folder creation if deleted' do
-      Entry.root.create_folder(:key => 'one').destroy
+      Entry.root.create_folder(key: 'one').destroy
 
-      folder = Entry.root.create_folder(:key => 'folder')
-      folder.create_folder(:key => 'two').destroy
+      folder = Entry.root.create_folder(key: 'folder')
+      folder.create_folder(key: 'two').destroy
 
       assert_no_difference 'Registry::Entry.count' do
-        Entry.root.merge({'one' => {'one' => 'one'}}, :skip_already_deleted => true)
-        Entry.root.merge({'folder' => {'two' => {:one => 'one'}}}, :skip_already_deleted => true)
-        folder.merge({'two' => {:one => 'one'}}, :skip_already_deleted => true)
+        Entry.root.merge({'one' => {'one' => 'one'}}, skip_already_deleted: true)
+        Entry.root.merge({'folder' => {'two' => {one: 'one'}}}, skip_already_deleted: true)
+        folder.merge({'two' => {one: 'one'}}, skip_already_deleted: true)
       end
     end
 
     test 'merge with delete flag' do
       Entry.root.merge(
-        'keep' => {:keep => true, :lose => false},
-        :keep  => 'keep',
-        'lose' => {:lose => true},
-        :lose  => 'lose'
+        'keep' => {keep: true, lose: false},
+        keep:     'keep',
+        'lose' => {lose: true},
+        lose:     'lose'
       )
 
-      Entry.root.merge({'keep' => {:keep => 'ignored'}, :keep => 'ignored'}, :delete => true)
+      Entry.root.merge({'keep' => {keep: 'ignored'}, keep: 'ignored'}, delete: true)
 
-      expected = {'keep' => {:keep => true}, :keep => 'keep', '_last_updated_at' => '__any__'}
+      expected = {'keep' => {keep: true}, keep: 'keep', '_last_updated_at' => '__any__'}
       assert_hash expected, Entry.root.export
     end
 
@@ -184,7 +184,7 @@ module Registry
         false     => false,
         42        => -42,
         3.14      => -3.14,
-        :symbol   => :symbol,
+        symbol:      :symbol,
         'time'    => Time.parse('1968-05-21 12:59:00'),
         1 ... 10  => 1 .. 10,
         'array'   => ['string', false, -42, -3.14, :symbol, Time.parse('1968-05-21 12:59:00'), 1...10]
@@ -198,10 +198,10 @@ module Registry
 
         folders.each do |folder|
           entries[env][folder] ||= {}
-          folder = Folder.create!(:parent => root, :key => folder)
+          folder = Folder.create!(parent: root, key: folder)
 
           values.each do |key, value|
-            Entry.create!(:parent => folder, :key => key, :value => value)
+            Entry.create!(parent: folder, key: key, value: value)
             entries[env][folder.key].store(key, value)
           end
         end

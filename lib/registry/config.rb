@@ -22,7 +22,7 @@ module Registry
           Registry::RegistryController.before_action(:permission_check)
         end
       else
-        Registry::RegistryController.skip_before_action(:permission_check, :raise => false)
+        Registry::RegistryController.skip_before_action(:permission_check, raise: false)
         remove_controller_method(:permission_check)
       end
     end

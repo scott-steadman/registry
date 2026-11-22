@@ -14,7 +14,7 @@ module Registry
 
     test 'merge' do
       wrapper  = Registry::Wrapper.new({one: '1'})
-      expected = {:one => 1, 'two' => 2}
+      expected = {one: 1, 'two' => 2}
 
       # 3 = root Folder + two Entries
       assert_difference 'Registry::Entry.count', 3 do
@@ -29,7 +29,7 @@ module Registry
 
       # 2 = the root Folder (created on first access) + the new one
       assert_difference 'Registry::Folder.count', 2 do
-        assert_equal true, wrapper.ensure_folder_exists('two', :label => 'Two')
+        assert_equal true, wrapper.ensure_folder_exists('two', label: 'Two')
       end
 
       folder = Registry::Entry.root.child('two')

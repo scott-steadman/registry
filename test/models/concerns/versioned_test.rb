@@ -11,31 +11,31 @@ class VersionedTest < Registry::TestCase
 
   def setup
     @root  = Registry::Entry.root
-    @entry = @root.create_property(:key => 'one', :value => '1')
+    @entry = @root.create_property(key: 'one', value: '1')
   end
 
   def teardown
-    connection.drop_table(WIDGETS_TABLE, :if_exists => true)
-    connection.drop_table("#{WIDGETS_TABLE.singularize}_versions", :if_exists => true)
+    connection.drop_table(WIDGETS_TABLE, if_exists: true)
+    connection.drop_table("#{WIDGETS_TABLE.singularize}_versions", if_exists: true)
   end
 
   test 'versions are recorded in order' do
-    @entry.update(:value => '2')
+    @entry.update(value: '2')
 
     assert_equal [[1, '1'], [2, '2']], @entry.versions.reload.map {|vv| [vv.version, vv.value]}
   end
 
   test 'earliest and latest version' do
-    @entry.update(:value => '2')
-    @entry.update(:value => '3')
+    @entry.update(value: '2')
+    @entry.update(value: '3')
 
     assert_equal '1', @entry.versions.earliest.value
     assert_equal '3', @entry.versions.reload.latest.value
   end
 
   test 'version before and after' do
-    @entry.update(:value => '2')
-    @entry.update(:value => '3')
+    @entry.update(value: '2')
+    @entry.update(value: '3')
 
     first, second, third = @entry.versions.reload.to_a
 
@@ -46,7 +46,7 @@ class VersionedTest < Registry::TestCase
   end
 
   test 'version previous and next' do
-    @entry.update(:value => '2')
+    @entry.update(value: '2')
 
     first, second = @entry.versions.reload.to_a
 
@@ -57,7 +57,7 @@ class VersionedTest < Registry::TestCase
   end
 
   test 'revert_to a version number' do
-    @entry.update(:value => '2')
+    @entry.update(value: '2')
 
     assert_equal true, @entry.revert_to(1)
     assert_equal '1',  @entry.value
@@ -70,25 +70,25 @@ class VersionedTest < Registry::TestCase
   end
 
   test 'revert_to a version record' do
-    @entry.update(:value => '2')
+    @entry.update(value: '2')
 
     assert_equal true, @entry.revert_to(@entry.versions.reload.first)
     assert_equal '1',  @entry.value
   end
 
   test 'revert_to a version record of another entry' do
-    other = @root.create_property(:key => 'two', :value => '2')
+    other = @root.create_property(key: 'two', value: '2')
 
     assert_equal false, @entry.revert_to(other.versions.first)
     assert_equal '1',   @entry.value
   end
 
   test 'revert_to an unsaved version record' do
-    assert_equal false, @entry.revert_to(Registry::Entry::Version.new(:entry_id => @entry.id))
+    assert_equal false, @entry.revert_to(Registry::Entry::Version.new(entry_id: @entry.id))
   end
 
   test 'revert_to! saves without adding a version' do
-    @entry.update(:value => '2')
+    @entry.update(value: '2')
 
     assert_no_difference 'Registry::Entry::Version.count' do
       assert_equal true, @entry.revert_to!(1)
@@ -98,7 +98,7 @@ class VersionedTest < Registry::TestCase
   end
 
   test 'revert_to! an unknown version number does not save' do
-    @entry.update(:value => '2')
+    @entry.update(value: '2')
 
     assert_equal false, @entry.revert_to!(42)
     assert_equal '2',   @entry.reload.value
@@ -114,7 +114,7 @@ class VersionedTest < Registry::TestCase
   test 'without_revision does not add a version' do
     assert_no_difference 'Registry::Entry::Version.count' do
       @entry.without_revision do
-        @entry.update(:value => '2')
+        @entry.update(value: '2')
       end
     end
 
@@ -127,7 +127,7 @@ class VersionedTest < Registry::TestCase
     end
 
     assert_difference 'Registry::Entry::Version.count', 1 do
-      @entry.update(:value => '2')
+      @entry.update(value: '2')
     end
   end
 
@@ -150,8 +150,8 @@ class VersionedTest < Registry::TestCase
 
   test 'clear_old_versions keeps max_version_limit versions' do
     with_max_version_limit(1) do
-      @entry.update(:value => '2')
-      @entry.update(:value => '3')
+      @entry.update(value: '2')
+      @entry.update(value: '3')
 
       assert_equal [3], @entry.versions.reload.map(&:version)
     end
@@ -160,7 +160,7 @@ class VersionedTest < Registry::TestCase
   test 'clear_old_versions is a no-op without a limit' do
     assert_equal 0, Registry::Entry.max_version_limit, 'Precondition failed: there should be no limit'
 
-    @entry.update(:value => '2')
+    @entry.update(value: '2')
 
     assert_equal [1, 2], @entry.versions.reload.map(&:version)
   end
@@ -177,7 +177,7 @@ class VersionedTest < Registry::TestCase
   test 'version_condition_met? with a proc' do
     with_version_condition(->(entry) {entry.key == 'one'}) do
       assert_equal true,  @entry.version_condition_met?
-      assert_equal false, @root.create_property(:key => 'two', :value => '2').version_condition_met?
+      assert_equal false, @root.create_property(key: 'two', value: '2').version_condition_met?
     end
   end
 
@@ -285,7 +285,7 @@ private
   # Versioned is included, because that is when the concern derives the
   # versioned table name and foreign key from it.
   def versioned_widget_model
-    connection.create_table(WIDGETS_TABLE, :force => true) do |tt|
+    connection.create_table(WIDGETS_TABLE, force: true) do |tt|
       tt.string :name
       tt.string :type
     end

@@ -10,7 +10,7 @@ class RegistryTest < Registry::TestCase
   test 'method_missing' do
     reg = {
       'api' => {
-        :enabled => true,
+        enabled: true,
         'limit'  => 1,
       },
     }
@@ -60,7 +60,7 @@ class RegistryTest < Registry::TestCase
   test 'to_hash' do
     reg = {
       'foo' => {
-        :default => :one,
+        default: :one,
          0 ..  9 => :two,
         20 .. 29 => :three,
       },
@@ -147,7 +147,7 @@ test:
 
     Registry.import('/tmp/foo.yml')
     orig_root_id = Registry::Entry.root.id
-    Registry.import('/tmp/foo.yml', :purge => true)
+    Registry.import('/tmp/foo.yml', purge: true)
 
     assert_not_equal orig_root_id, Registry::Entry.root.id
   end
@@ -180,7 +180,7 @@ test:
 
     assert_equal true, Registry.api.enabled?
     assert_equal 1, Registry.api.limit
-    Registry.api.with(:enabled => false, :limit => 2) do
+    Registry.api.with(enabled: false, limit: 2) do
       Registry.reset # should be prevented
       assert_equal false, Registry.api.enabled?
       assert_equal 2, Registry.api.limit
@@ -201,7 +201,7 @@ test:
 
     assert !Registry.prevent_reset?
     Registry.prevent_reset!
-    Registry.api.with(:enabled => true) do
+    Registry.api.with(enabled: true) do
       # nothing
     end
     assert Registry.prevent_reset?
@@ -262,7 +262,7 @@ test:
 
     reg = {
       'api' => {
-        :enabled => true,
+        enabled: true,
         'limit'  => 1,
       },
     }

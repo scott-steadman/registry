@@ -18,8 +18,8 @@ module Versioned
     self.non_versioned_columns        = [self.primary_key, inheritance_column, 'version', 'lock_version', versioned_inheritance_column, 'created_at', 'created_on']
 
     has_many :versions,   -> {order("version ASC")},
-             :class_name  => "#{self.to_s}::Version",
-             :foreign_key => versioned_foreign_key do
+             class_name:  "#{self.to_s}::Version",
+             foreign_key: versioned_foreign_key do
 
       # finds earliest version of this record
       # reorder, not order: the association already sorts by version ascending
@@ -29,7 +29,7 @@ module Versioned
 
       # find latest version of this record
       def latest
-        @latest ||= reorder(:version => :desc).first
+        @latest ||= reorder(version: :desc).first
       end
     end
 
@@ -70,7 +70,7 @@ module Versioned
     if version.is_a?(self.class.versioned_class)
       return false unless version.send(self.class.versioned_foreign_key) == id and !version.new_record?
     else
-      return false unless version = versions.send("find_by", {:version => version})
+      return false unless version = versions.send("find_by", {version: version})
     end
     self.clone_versioned_model(version, self)
     send("version=", version.version)
@@ -197,18 +197,18 @@ protected
 
       self.versioned_columns.each do |col|
         self.connection.add_column versioned_table_name, col.name, col.type,
-          :limit     => col.limit,
-          :default   => col.default,
-          :scale     => col.scale,
-          :precision => col.precision
+          limit:     col.limit,
+          default:   col.default,
+          scale:     col.scale,
+          precision: col.precision
       end
 
       if type_col = self.columns_hash[inheritance_column]
         self.connection.add_column versioned_table_name, versioned_inheritance_column, type_col.type,
-          :limit     => type_col.limit,
-          :default   => type_col.default,
-          :scale     => type_col.scale,
-          :precision => type_col.precision
+          limit:     type_col.limit,
+          default:   type_col.default,
+          scale:     type_col.scale,
+          precision: type_col.precision
       end
 
       self.connection.add_index versioned_table_name, versioned_foreign_key
@@ -290,8 +290,8 @@ protected
       versioned_class.original_class = base_class
       versioned_class.table_name = versioned_table_name
       versioned_class.belongs_to base_class.to_s.demodulize.underscore.to_sym,
-        :class_name  => "::#{base_class.to_s}",
-        :foreign_key => versioned_foreign_key
+        class_name:  "::#{base_class.to_s}",
+        foreign_key: versioned_foreign_key
       versioned_class.set_sequence_name version_sequence_name if version_sequence_name
 
     end #  ensure_versioned_model

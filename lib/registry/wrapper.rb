@@ -52,7 +52,7 @@ module Registry
 
     def ensure_folder_exists(folder_key, new_attrs={})
       return nil if to_hash.keys.include?(folder_key)
-      entry.create_folder(new_attrs.merge(:key => folder_key))
+      entry.create_folder(new_attrs.merge(key: folder_key))
       Registry.reset
       true
     end
@@ -99,7 +99,7 @@ module Registry
     end
 
     def update(key, value)
-      entry.child(key).update(:value => value)
+      entry.child(key).update(value: value)
     end
 
     def entry

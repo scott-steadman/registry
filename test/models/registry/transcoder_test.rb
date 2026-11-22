@@ -100,7 +100,7 @@ module Registry
       }
 
       root = Entry.root
-      values.each {|key, value| root.create_property(:key => key, :value => value)}
+      values.each {|key, value| root.create_property(key: key, value: value)}
 
       Registry.reset
       values.each do |key, value|
