@@ -3,6 +3,7 @@ require 'test_helper.rb'
 module Registry
   class RegistryControllerTest < ActionController::TestCase
     include Engine.routes.url_helpers
+    include TestHelpers
 
     def setup
       @routes = Engine.routes
@@ -27,7 +28,7 @@ module Registry
       folder = Registry::Folder.create!(:parent => @root, :key => 'folder')
 
       assert_difference 'Registry::Folder.count', -1 do
-        get :delete_folder, :node => folder.id
+        get :delete_folder, :params => {:node => folder.id}
         assert_response :success
         assert_equal 'done', @response.body
       end
@@ -36,7 +37,7 @@ module Registry
     test 'delete_folder failed' do
       Registry::Folder.create!(:parent => @root, :key => 'folder')
       assert_no_difference 'Registry::Folder.count' do
-        get :delete_folder, :node => 42
+        get :delete_folder, :params => {:node => 42}
         assert_response :success
         assert_equal 'done', @response.body
       end
@@ -44,14 +45,14 @@ module Registry
 
     test 'folders' do
       folder = Registry::Folder.create!(:parent => @root, :key => 'folder', :label => 'Label')
-      get :folders, :node => folder.parent.id
+      get :folders, :params => {:node => folder.parent.id}
       assert_response :success
       expected = [{'id' => folder.id.to_s, 'key' => 'folder', 'label' => 'Label', 'text' => 'Label', 'cls' => 'folder'}]
       assert_equal expected, ActiveSupport::JSON.decode(@response.body)
     end
 
     test 'folder' do
-      get :folder, :folder_id => @root
+      get :folder, :params => {:folder_id => @root.id}
       assert_response :success
       expected = {
         'total'       => 1,
@@ -64,7 +65,7 @@ module Registry
     test 'folder creation' do
       with_login(42) do |id|
         assert_difference 'Registry::Folder.count', 1 do
-          post :folder, :folder_id => 'xnode-123', :folder => {:label => 'Label', :key => 'key'}, :parent_id => @root.id
+          post :folder, :params => {:folder_id => 'xnode-123', :folder => {:label => 'Label', :key => 'key'}, :parent_id => @root.id}
           assert_response :success
         end
         expected = {
@@ -81,7 +82,7 @@ module Registry
       with_login(42) do |id|
         child = Registry::Folder.create!(:parent => @root, :key => 'key', :label => 'label', :user_id => id)
         assert_no_difference 'Registry::Folder.count' do
-          post :folder, :folder_id => child.id, :folder => {:id => child.id, :label => 'Label', :key => 'Key'}, :parent_id => @root.id
+          post :folder, :params => {:folder_id => child.id, :folder => {:id => child.id, :label => 'Label', :key => 'Key'}, :parent_id => @root.id}
           assert_response :success
         end
         child.reload
@@ -113,7 +114,7 @@ module Registry
     test 'property creation' do
       with_login(42) do |id|
         assert_difference 'Registry::Entry.count', 1 do
-          post :property, :parent_id => @root.id, :property => {:label => 'Label', :key => 'key', :value => 'value', :description => 'Description'}
+          post :property, :params => {:parent_id => @root.id, :property => {:label => 'Label', :key => 'key', :value => 'value', :description => 'Description'}}
           assert_response :success
         end
         expected = {
@@ -130,7 +131,7 @@ module Registry
       with_login(42) do |id|
         child = Registry::Entry.create!(:parent => @root, :key => 'key', :value => 'value', :label => 'label', :description => 'description', :user_id => 1)
         assert_no_difference 'Registry::Folder.count' do
-          post :property, :parent_id => @root.id, :prop_id => child.id, :property => {:key => 'Key', :value => 'Value', :label => 'Label', :description => 'Description'}
+          post :property, :params => {:parent_id => @root.id, :prop_id => child.id, :property => {:key => 'Key', :value => 'Value', :label => 'Label', :description => 'Description'}}
           assert_response :success
         end
         child.reload
@@ -165,7 +166,7 @@ module Registry
     test 'properties put' do
       with_login(42) do |id|
         one = Registry::Entry.create!(:parent => @root, :key => 'one', :value => '1')
-        put :properties, :properties => {:id => one.id, :value => '2', :label => 'discarded'}
+        put :properties, :params => {:properties => {:id => one.id, :value => '2', :label => 'discarded'}}
         assert_response :success
         expected = {
           'total'       => 1,
@@ -183,7 +184,7 @@ module Registry
       with_login(42) do |id|
         one = Registry::Entry.create!(:parent => @root, :key => 'one', :value => '1')
         assert_difference 'Registry::Entry.count', -1 do
-          delete :properties, :properties => one.id
+          delete :properties, :params => {:properties => one.id}
           assert_response :success
         end
         expected = {
@@ -203,7 +204,7 @@ module Registry
       first = one.versions.first
       second = one.versions.last
 
-      get :revisions, :id => one.id
+      get :revisions, :params => {:id => one.id}
       assert_response :success
 
       expected = {
@@ -279,25 +280,23 @@ module Registry
         config.user_id
       end
 
-      assert_raise NoMethodError do
-        @controller.send(:registry_user_id)
-      end
+      # Clearing the configuration falls back to the controller's own default.
+      assert_equal(-1, @controller.send(:registry_user_id))
     end
 
     test 'user_name configuration' do
       Registry.configure do |config|
-        config.user_name { 'Scott' }
+        config.user_name { |id| 'Scott' }
       end
 
-      assert_equal 'Scott', @controller.send(:registry_user_name)
+      assert_equal 'Scott', @controller.send(:registry_user_name, 42)
 
       Registry.configure do |config|
         config.user_name
       end
 
-      assert_raise NoMethodError do
-        @controller.send(:registry_user_name)
-      end
+      # Clearing the configuration falls back to the controller's own default.
+      assert_equal '42', @controller.send(:registry_user_name, 42)
     end
 
   end # class RegistryControllerTest

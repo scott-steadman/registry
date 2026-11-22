@@ -14,10 +14,10 @@ if !defined?($SKIP_COVERAGE) && ENV['SKIP_COVERAGE'] != 'true'
   require 'simplecov'
   SimpleCov.start do
     coverage_dir 'public/coverage'
-    add_filter 'config'
-    add_filter 'db'
-    add_filter 'test'
-    add_filter 'vendor'
+    skip 'config'
+    skip 'db'
+    skip 'test'
+    skip 'vendor'
   end
 end
 

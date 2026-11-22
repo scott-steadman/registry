@@ -33,6 +33,10 @@ module Dummy
 
     config.active_record.schema_format = :sql
 
+    # Dump without pg_dump's `--schema=public`, which would add a
+    # `CREATE SCHEMA public` that fails to load into a fresh database.
+    config.active_record.dump_schemas = :all
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files

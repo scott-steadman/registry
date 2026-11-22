@@ -18,12 +18,12 @@ module Registry
     def permission_check(*args, &blk)
       if block_given?
         silence_warnings do
-          Registry::RegistryController.send(:define_method, :permission_check, &blk)
+          define_controller_method(:permission_check, &blk)
           Registry::RegistryController.before_action(:permission_check)
         end
       else
-        Registry::RegistryController.skip_before_action(:permission_check)
-        Registry::RegistryController.send(:remove_method, :permission_check)
+        Registry::RegistryController.skip_before_action(:permission_check, :raise => false)
+        remove_controller_method(:permission_check)
       end
     end
 
@@ -45,12 +45,9 @@ module Registry
     #   end
     def user_id(*args, &blk)
       if block_given?
-        silence_warnings do
-          Registry::RegistryController.send(:define_method, :registry_user_id, &blk)
-          Registry::RegistryController.send(:private, :registry_user_id)
-        end
+        silence_warnings {define_controller_method(:registry_user_id, :private, &blk)}
       else
-        Registry::RegistryController.send(:remove_method, :registry_user_id)
+        remove_controller_method(:registry_user_id)
       end
     end
 
@@ -62,12 +59,9 @@ module Registry
     #   end
     def user_name(&blk)
       if block_given?
-        silence_warnings do
-          Registry::RegistryController.send(:define_method, :registry_user_name, &blk)
-          Registry::RegistryController.send(:private, :registry_user_name)
-        end
+        silence_warnings {define_controller_method(:registry_user_name, :private, &blk)}
       else
-        Registry::RegistryController.send(:remove_method, :registry_user_name)
+        remove_controller_method(:registry_user_name)
       end
     end
 
@@ -152,6 +146,24 @@ module Registry
       instance = Transcoder::DSL.new
       instance.instance_exec(&block)
       Transcoder.transcoders << instance
+    end
+
+private
+
+    # Module prepended to the controller that holds the configured overrides.
+    def controller_overrides
+      Registry::RegistryController::CONFIG_OVERRIDES
+    end
+
+    def define_controller_method(name, visibility = :public, &blk)
+      controller_overrides.send(:define_method, name, &blk)
+      controller_overrides.send(visibility, name)
+    end
+
+    def remove_controller_method(name)
+      return unless controller_overrides.private_method_defined?(name) ||
+                    controller_overrides.method_defined?(name)
+      controller_overrides.send(:remove_method, name)
     end
 
   end

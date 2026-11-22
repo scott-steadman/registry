@@ -1,5 +1,12 @@
 class Registry::RegistryController < ::ApplicationController
 
+  # Registry.configure installs the blocks it is given (permission_check,
+  # user_id, user_name) as methods on this module rather than on the controller
+  # itself, so that clearing one restores the default defined below instead of
+  # removing it from the controller for the rest of the process.
+  CONFIG_OVERRIDES = Module.new
+  prepend CONFIG_OVERRIDES
+
   def index
     # Render the UI in an iframe to prevent conflicts between ExtJS and the hosting app's javascript library.
   end
@@ -14,7 +21,7 @@ class Registry::RegistryController < ::ApplicationController
       node = Registry::Folder.find_by_id(params[:node])
       node.destroy if node
     end
-    render :text => 'done'
+    render :plain => 'done'
   end
 
   def folders
@@ -24,7 +31,7 @@ class Registry::RegistryController < ::ApplicationController
     node.folders.each do |child|
       folders << child.to_folder_hash
     end
-    render :text => folders.to_json
+    render :json => folders
   end
 
   def folder
@@ -32,10 +39,10 @@ class Registry::RegistryController < ::ApplicationController
 
     if request.post?
       if params[:folder_id].blank? or params[:folder_id].index('xnode')
-        fld = Registry::Folder.create(params[:folder].merge(:parent => parent, :user_id => registry_user_id))
+        fld = Registry::Folder.create(folder_params.merge(:parent => parent, :user_id => registry_user_id))
       else
         fld = Registry::Entry.find(params[:folder_id])
-        fld.update(params[:folder].merge(:user_id => registry_user_id))
+        fld.update(folder_params.merge(:user_id => registry_user_id))
       end
     else
       fld = Registry::Entry.find_by_id(params[:folder_id]) unless params[:folder_id].blank?
@@ -43,7 +50,7 @@ class Registry::RegistryController < ::ApplicationController
     end
 
     results[:folders] << fld.to_folder_hash
-    render :text => results.to_json
+    render :json => results
   end
 
   def property
@@ -51,7 +58,7 @@ class Registry::RegistryController < ::ApplicationController
 
     if request.post?
       if params[:prop_id].blank?
-        prop = Registry::Entry.create(params[:property].merge(:parent => parent, :user_id => registry_user_id))
+        prop = Registry::Entry.create(property_params.merge(:parent => parent, :user_id => registry_user_id))
       else
         prop = Registry::Entry.find_by_id(params[:prop_id]) || Registry::Entry.new(:parent => parent)
         prop.update(:key          => params[:property][:key],
@@ -67,7 +74,7 @@ class Registry::RegistryController < ::ApplicationController
     end
 
     results[:properties] << prop.to_form_property_hash if prop
-    render :text => results.to_json
+    render :json => results
   end
 
   def properties
@@ -94,7 +101,7 @@ class Registry::RegistryController < ::ApplicationController
       end
     end
 
-    render :text => results.to_json
+    render :json => results
   end
 
   def revisions
@@ -112,7 +119,7 @@ class Registry::RegistryController < ::ApplicationController
       }
     end
 
-    render :text => results.to_json
+    render :json => results
   end
 
   def export
@@ -129,6 +136,17 @@ private
 
   def parent
     @parent ||= Registry::Entry.find_by_id(params[:parent_id]) || Registry::Entry.root
+  end
+
+  # The forms post the record's id alongside the editable fields; the action
+  # locates the record from folder_id/prop_id instead, so it isn't permitted
+  # here.
+  def folder_params
+    params.require(:folder).permit(:key, :label)
+  end
+
+  def property_params
+    params.require(:property).permit(:key, :label, :description, :value)
   end
 
   def registry_user_id

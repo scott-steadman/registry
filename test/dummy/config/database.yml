@@ -7,6 +7,11 @@ default: &default
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   username: postgres
   password: <%= ENV['POSTGRES_PASSWORD'] %>
+  # Pin the search path: the server default is `"",public`, which the :sql
+  # schema dumper writes verbatim into structure.sql as
+  # `SET search_path TO "",public;` -- and psql rejects the empty identifier
+  # when loading it back.
+  schema_search_path: public
 
 development:
   <<: *default

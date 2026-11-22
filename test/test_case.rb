@@ -1,7 +1,9 @@
 require 'test_helper'
 
 module Registry
-  class TestCase < ActiveSupport::TestCase
+  # Helpers shared by the model/library tests (Registry::TestCase) and the
+  # controller tests, which have to descend from ActionController::TestCase.
+  module TestHelpers
 
     def with_login(id)
       Registry.configure do |config|
@@ -34,5 +36,9 @@ module Registry
       end
     end
 
+  end # module Registry::TestHelpers
+
+  class TestCase < ActiveSupport::TestCase
+    include TestHelpers
   end # class Regitry::TestCase
 end # module Registry
