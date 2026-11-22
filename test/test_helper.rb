@@ -10,16 +10,9 @@ ENV['RAILS_ENV'] = 'test'
 #end
 #Warning.extend(CaptureRubyWarnings)
 
-if !defined?($SKIP_COVERAGE) && ENV['SKIP_COVERAGE'] != 'true'
-  require 'simplecov'
-  SimpleCov.start do
-    coverage_dir 'public/coverage'
-    skip 'config'
-    skip 'db'
-    skip 'test'
-    skip 'vendor'
-  end
-end
+# Already required by bin/rails for `rails test`, which starts coverage before
+# the engine is loaded; requiring it again here is a no-op.
+require_relative 'coverage'
 
 require 'pp'
 class Object

@@ -22,13 +22,14 @@ module Versioned
              :foreign_key => versioned_foreign_key do
 
       # finds earliest version of this record
+      # reorder, not order: the association already sorts by version ascending
       def earliest
-        @earliest ||= find(:first, :order => 'version')
+        @earliest ||= reorder(:version).first
       end
 
       # find latest version of this record
       def latest
-        @latest ||= find(:first, :order => 'version desc')
+        @latest ||= reorder(:version => :desc).first
       end
     end
 
@@ -58,7 +59,9 @@ module Versioned
     return if self.class.max_version_limit == 0
     excess_baggage = version.to_i - self.class.max_version_limit
     if excess_baggage > 0
-      self.class.versioned_class.delete_all ["version <= ? and #{self.class.versioned_foreign_key} = ?", excess_baggage, id]
+      self.class.versioned_class
+                 .where(["version <= ? and #{self.class.versioned_foreign_key} = ?", excess_baggage, id])
+                 .delete_all
     end
   end
 
@@ -247,9 +250,11 @@ protected
     def without_locking(&block)
       current = ActiveRecord::Base.lock_optimistically
       ActiveRecord::Base.lock_optimistically = false if current
-      result = block.call
+      block.call
+    ensure
+      # ensure, because a block that raises -- a failed save_without_revision,
+      # say -- would otherwise leave locking off for the whole process.
       ActiveRecord::Base.lock_optimistically = true if current
-      result
     end
 
     def ensure_versioned_model

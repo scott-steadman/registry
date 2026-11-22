@@ -24,6 +24,27 @@ module Registry
       assert_equal expected, wrapper.to_hash.except('_last_updated_at')
     end
 
+    test 'ensure_folder_exists creates a missing folder' do
+      wrapper = Registry::Wrapper.new({'one' => '1'})
+
+      # 2 = the root Folder (created on first access) + the new one
+      assert_difference 'Registry::Folder.count', 2 do
+        assert_equal true, wrapper.ensure_folder_exists('two', :label => 'Two')
+      end
+
+      folder = Registry::Entry.root.child('two')
+      assert_equal 'Two', folder.label
+      assert_equal true,  folder.is_a?(Registry::Folder)
+    end
+
+    test 'ensure_folder_exists leaves an existing key alone' do
+      wrapper = Registry::Wrapper.new({'one' => '1'})
+
+      assert_no_difference 'Registry::Entry.count' do
+        assert_nil wrapper.ensure_folder_exists('one')
+      end
+    end
+
   end # class WrapperTest
 end # module Registry
 

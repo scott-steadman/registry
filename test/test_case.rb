@@ -4,6 +4,17 @@ module Registry
   # Helpers shared by the model/library tests (Registry::TestCase) and the
   # controller tests, which have to descend from ActionController::TestCase.
   module TestHelpers
+    extend ActiveSupport::Concern
+
+    included do
+      # The loaded registry and its cache entry are module-level state that the
+      # transaction rollback between tests does not undo, so a test that reads
+      # Registry.whatever would otherwise see whatever the last test left there.
+      setup do
+        Registry.allow_reset!
+        Registry.reset(true)
+      end
+    end
 
     def with_login(id)
       Registry.configure do |config|

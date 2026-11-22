@@ -19,7 +19,8 @@ Registry.configure do |config|
   # boolean transcoder
   config.add_transcoder do
     to_db   {|value|  value ? 'true' : 'false'}
-    from_db {|string| ['t', 'true'].include?(string)}
+    # downcased to agree with `matches`, which accepts any case
+    from_db {|string| ['t', 'true'].include?(string.to_s.downcase)}
 
     matches do |value|
       value.is_a?(TrueClass) or value.is_a?(FalseClass) or # to_db

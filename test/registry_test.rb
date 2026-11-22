@@ -24,6 +24,19 @@ class RegistryTest < Registry::TestCase
     end
   end
 
+  test 'method_missing resets the registry when the key is unknown' do
+    Registry::Entry.root.merge({'api' => {'enabled' => true}})
+    assert_equal true, Registry.api.enabled, 'Precondition failed: the registry should be loaded'
+
+    assert_raise NoMethodError do
+      Registry.nope
+    end
+
+    assert_nil Registry.instance_variable_get(:@registry),
+               'a failed lookup should discard the loaded registry, so the next access reloads it'
+    assert_equal true, Registry.api.enabled, 'the registry should still be usable'
+  end
+
   test 'exists' do
     reg = {
       'api' => {
