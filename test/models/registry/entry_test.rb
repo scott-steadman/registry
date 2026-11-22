@@ -202,7 +202,7 @@ module Registry
 
           values.each do |key, value|
             Entry.create!(parent: folder, key: key, value: value)
-            entries[env][folder.key].store(key, value)
+            entries.dig(env, folder.key).store(key, value)
           end
         end
 

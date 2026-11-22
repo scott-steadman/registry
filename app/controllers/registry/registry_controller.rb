@@ -61,12 +61,7 @@ class Registry::RegistryController < ::ApplicationController
         prop = Registry::Entry.create(property_params.merge(parent: parent, user_id: registry_user_id))
       else
         prop = Registry::Entry.find_by_id(params[:prop_id]) || Registry::Entry.new(parent: parent)
-        prop.update(key:         params[:property][:key],
-                    label:       params[:property][:label],
-                    description: params[:property][:description],
-                    value:       params[:property][:value],
-                    user_id:     registry_user_id
-                    )
+        prop.update(property_params.merge(user_id: registry_user_id))
       end
     else
       prop = Registry::Entry.find_by_id(params[:prop_id]) unless params[:prop_id].blank?
@@ -89,8 +84,8 @@ class Registry::RegistryController < ::ApplicationController
       results[:total] = node.children.size
 
     elsif request.put?
-      item = Registry::Entry.find_by_id(params[:properties][:id])
-      item.update("value" => params[:properties][:value], user_id: registry_user_id)
+      item = Registry::Entry.find_by_id(params.dig(:properties, :id))
+      item.update("value" => params.dig(:properties, :value), user_id: registry_user_id)
       results[:properties] << item.to_grid_property_hash
       results[:total] = 1
 
