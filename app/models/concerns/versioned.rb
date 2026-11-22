@@ -253,7 +253,9 @@ protected
     end
 
     def ensure_versioned_model
-      return if base_class.const_defined?('Version')
+      # inherit=false on purpose: constant lookup on a class reaches Object, so a top-level Version
+      # in the host application would look like ours and leave the versioned class never built
+      return if base_class.const_defined?('Version', false)
 
       # create the dynamic versioned model
       base_class.const_set('Version', Class.new(ApplicationRecord)).class_eval do

@@ -29,6 +29,12 @@ module Registry
     include Versioned
     self.versioned_table_name = 'registry_entry_versions'
 
+    # Registry::Entry is always versioned, so build the versioned class now rather than on the
+    # first save that happens to need it.  It has to be here rather than in Versioned's `included`
+    # block, because versioned_table_name is assigned on the line above -- *after* the include --
+    # and building it any earlier would point Registry::Entry::Version at the default table name.
+    ensure_versioned_model
+
     belongs_to :parent,                          :class_name => 'Entry', :foreign_key => 'parent_id', :required => false
     has_many   :children, -> {order('key asc')}, :class_name => 'Entry', :foreign_key => 'parent_id', :dependent => :destroy
 

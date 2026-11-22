@@ -78,6 +78,40 @@ module Registry
       assert_equal 3, prop.reload.version
     end
 
+    # Registry::Entry is always versioned: entry.rb calls ensure_versioned_model in its class
+    # body, so Registry::Entry::Version exists from the moment the model is loaded, with nothing
+    # having been saved.
+    #
+    # It is worth asserting because every other versioning test here is blind to it. They all
+    # create an entry before updating one, and an insert is the single path that never reads the
+    # versions association -- next_version answers 1 for a new record -- so the insert's own
+    # after_save would build the class and cover for its being missing. That is how the class came
+    # to be built a callback too late and nothing noticed: set_new_version is a before_save and
+    # reads versions.maximum('version'), while the only caller of ensure_versioned_model was
+    # save_version, an after_save. Any process whose first write was an *update* -- which is most
+    # of them, the rows being there already -- could not save a registry entry at all.
+    test 'Registry::Entry is always versioned' do
+      assert_equal true, Entry.const_defined?(:Version, false),
+                   'the versioned class should exist before anything has been saved'
+      assert_equal 'registry_entry_versions', Entry::Version.table_name
+      assert_equal Entry, Entry::Version.original_class
+      assert_nothing_raised { Entry.reflect_on_association(:versions).klass }
+    end
+
+    # ...and the same invariant in a process of its own, because the test above can be satisfied by
+    # an earlier test in a random order having saved an entry and built the class as a side effect.
+    # This is the only assertion here that a lazily-built class cannot pass.
+    test 'a fresh process has the versioned class before it saves anything' do
+      script = 'require "./test/dummy/config/environment"; ' \
+               'exit(Registry::Entry.const_defined?(:Version, false) ? 0 : 1)'
+
+      Dir.chdir(Rails.root.join('..', '..')) do
+        assert_equal true, system({'RAILS_ENV' => 'test'}, RbConfig.ruby, '-e', script,
+                                  out: File::NULL, err: File::NULL),
+                     'Registry::Entry::Version should be defined at load, with no save to build it'
+      end
+    end
+
     test 'deletes are versioned' do
       prop = Entry.root.create_property(:key => 'one', :value => 'one')
 
